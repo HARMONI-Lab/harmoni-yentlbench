@@ -1,1 +1,1 @@
-# yentlbench
+We introduce the Perturbation Sensitivity Score (PSS), a model-level metric quantifying output instability under controlled demographic token substitution. Unlike accuracy-based comparisons, PSS isolates the causal contribution of a demographic token to prediction variance, independent of baseline model performance.
