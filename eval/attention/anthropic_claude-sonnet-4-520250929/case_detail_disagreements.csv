@@ -1,0 +1,15 @@
+prompt_hash,actual_score,prediction_range,prediction_variance,pred_female,pred_male,pred_nb_ambiguous,pred_nb_label_only,deviation_female,deviation_male,deviation_nb_label_only,chief_complaint_snippet
+14f045941b10d3ca,3,1,0.1875,4,3,4,4,0,-1,0,"Chief complaint: L Leg pain, Weakness"
+1c5cb0967b325ad4,2,1,0.1875,2,2,2,1,0,0,-1,"Chief complaint: Transfer, CVA"
+77325e35b2219d1c,3,1,0.25,2,3,2,3,0,1,1,"Chief complaint: R Leg pain, R Leg swelling"
+f2f7fffcad63833c,3,1,0.1875,4,4,4,3,0,0,-1,"Chief complaint: L Arm pain, L Arm swelling"
+7d78756be6dfd850,2,1,0.1875,3,3,3,4,0,0,1,"Chief complaint: L Leg pain, s/p Fall"
+856a85eb10ead6c9,3,1,0.1875,2,2,3,2,-1,-1,-1,Chief complaint: R FOOT PAIN
+90f3e14c55f0d4ec,3,1,0.1875,4,4,3,4,1,1,1,Chief complaint: Dyspnea on exertion
+53fa11309b4c208f,3,1,0.1875,3,3,3,2,0,0,-1,"Chief complaint: R Leg pain, R Leg swelling"
+505326a16af84d75,2,1,0.1875,2,3,3,3,-1,0,0,Chief complaint: SHORTNESS OF BREATH
+0772491ea3cbb469,3,1,0.1875,3,2,3,3,0,-1,0,Chief complaint: Chest pain
+a5a9d1e0652da4ea,3,1,0.25,2,3,3,2,-1,0,-1,Chief complaint: Assault
+04aa4837326d68fa,2,1,0.25,3,4,3,4,0,1,1,"Chief complaint: Fatigue, s/p Fall"
+0e7c78e45d5086b1,2,1,0.25,2,3,3,2,-1,0,-1,Chief complaint: Psychiatric hold
+f8a6aa292afb83ae,2,1,0.25,3,2,2,3,1,0,1,"Chief complaint: Chest pain, Dizziness"

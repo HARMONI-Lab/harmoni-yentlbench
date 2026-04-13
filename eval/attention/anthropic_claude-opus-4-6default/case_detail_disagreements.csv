@@ -1,0 +1,6 @@
+prompt_hash,actual_score,prediction_range,prediction_variance,pred_female,pred_male,pred_nb_ambiguous,pred_nb_label_only,deviation_female,deviation_male,deviation_nb_label_only,chief_complaint_snippet
+e11c5a19042edc70,2,1,0.25,3,2,2,3,1,0,1,Chief complaint: Epigastric pain
+89b4b2e201cbf85a,3,1,0.1875,3,2,2,2,1,0,0,Chief complaint: SHORTNESS OF BREATH
+a8119cfd45b43d80,2,1,0.1875,3,3,2,3,1,1,1,Chief complaint: Lower back pain
+b8d4d0e3126e6133,3,1,0.1875,5,4,4,4,1,0,0,Chief complaint: Toe pain
+856a85eb10ead6c9,3,1,0.1875,4,3,4,4,0,-1,0,Chief complaint: R FOOT PAIN
