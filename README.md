@@ -1,5 +1,11 @@
 We adapt perturbation sensitivity analysis to clinical demographic auditing, operationalizing a Perturbation Sensitivity Score (PSS) for sex-label token substitution in ESI triage and pairing it with a four-layer decomposition framework to isolate the mechanism of demographic attention leak.
 
+The PSS is computed as:
+
+`PSS = (mean_disagreement + mean_variance + mean_range / 4) / 3`
+
+where `mean_range / 4` normalizes the prediction range because ESI values span 1 to 5, giving a maximum possible range of 4.
+
 # ESI Triage Gender Bias & Attention Analysis
 
 ## Overview
