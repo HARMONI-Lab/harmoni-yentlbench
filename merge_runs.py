@@ -6,7 +6,7 @@ Parses, normalizes, and joins multiple evaluation run results from a batch
 ESI (Emergency Severity Index) triage scoring system.
 
 Usage:
-    python merge_runs.py --results-dir results --output results/merged_evaluations.csv
+    python merge_runs.py --results-dir results --output eval/merged_evaluations.csv
     python merge_runs.py --include-metrics --verbose
 """
 
@@ -380,8 +380,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--output",
-        default="results/merged_evaluations.csv",
-        help="Output CSV path (default: results/merged_evaluations.csv)",
+        default="eval/merged_evaluations.csv",
+        help="Output CSV path (default: eval/merged_evaluations.csv)",
     )
     parser.add_argument(
         "--include-metrics",

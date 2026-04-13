@@ -139,13 +139,13 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--input",
-        default="results/merged_evaluations.csv",
+        default="eval/merged_evaluations.csv",
         help="Path to merged evaluations CSV",
     )
     parser.add_argument(
         "--output-dir",
-        default="results/attention",
-        help="Output directory (default: results/attention)",
+        default="eval/attention",
+        help="Output directory (default: eval/attention)",
     )
     parser.add_argument(
         "--verbose",

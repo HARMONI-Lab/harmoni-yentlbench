@@ -6,8 +6,8 @@ Computes per-run benchmark statistics from the merged evaluation CSV
 produced by merge_runs.py.
 
 Usage:
-    python benchmark_stats.py --input results/merged_evaluations.csv
-    python benchmark_stats.py --input results/merged_evaluations.csv --output results/benchmark_stats.csv --verbose
+    python benchmark_stats.py --input eval/merged_evaluations.csv
+    python benchmark_stats.py --input eval/merged_evaluations.csv --output eval/benchmark_stats.csv --verbose
 """
 
 import argparse
@@ -448,8 +448,8 @@ def build_stats_table(
     return stats_df
 
 
-def print_stats_summary(stats_df: pd.DataFrame) -> None:
-    """Print a compact summary to the console."""
+def print_stats_summary(stats_df: pd.DataFrame, file: Any = sys.stdout) -> None:
+    """Print a compact summary to the console or a file."""
 
     highlight_cols = [
         "run",
@@ -471,7 +471,7 @@ def print_stats_summary(stats_df: pd.DataFrame) -> None:
     ]
     available = [c for c in highlight_cols if c in stats_df.columns]
 
-    print("\n===== Benchmark Summary =====\n")
+    print("\n===== Benchmark Summary =====\n", file=file)
 
     # Transpose for readability when there are many runs
     summary = stats_df[available].set_index("run").T
@@ -480,10 +480,10 @@ def print_stats_summary(stats_df: pd.DataFrame) -> None:
     formatted = summary.map(
         lambda x: f"{x:.4f}" if isinstance(x, float) else str(x)
     )
-    print(formatted.to_string())
+    print(formatted.to_string(), file=file)
 
     # Highlight best performer for key metrics
-    print("\n===== Best Performers =====\n")
+    print("\n===== Best Performers =====\n", file=file)
     higher_is_better = [
         "accuracy",
         "balanced_accuracy",
@@ -507,13 +507,13 @@ def print_stats_summary(stats_df: pd.DataFrame) -> None:
         if metric in ranked.columns:
             best_run = ranked[metric].idxmax()
             best_val = ranked[metric].max()
-            print(f"  {metric:>35s}: {best_run}  ({best_val:.4f})")
+            print(f"  {metric:>35s}: {best_run}  ({best_val:.4f})", file=file)
 
     for metric in lower_is_better:
         if metric in ranked.columns:
             best_run = ranked[metric].idxmin()
             best_val = ranked[metric].min()
-            print(f"  {metric:>35s}: {best_run}  ({best_val:.4f})")
+            print(f"  {metric:>35s}: {best_run}  ({best_val:.4f})", file=file)
 
 
 # ---------------------------------------------------------------------------
@@ -525,19 +525,24 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--input",
-        default="results/merged_evaluations.csv",
-        help="Path to merged evaluations CSV (default: results/merged_evaluations.csv)",
+        default="eval/merged_evaluations.csv",
+        help="Path to merged evaluations CSV (default: eval/merged_evaluations.csv)",
     )
     parser.add_argument(
         "--output",
-        default="results/benchmark_stats.csv",
-        help="Output CSV for the stats table (default: results/benchmark_stats.csv)",
+        default="eval/benchmark_stats.csv",
+        help="Output CSV for the stats table (default: eval/benchmark_stats.csv)",
     )
     parser.add_argument(
         "--output-full",
-        default="results/benchmark_stats_full.csv",
+        default="eval/benchmark_stats_full.csv",
         help="Output CSV with ALL metrics including confusion matrix cells "
-             "(default: results/benchmark_stats_full.csv)",
+             "(default: eval/benchmark_stats_full.csv)",
+    )
+    parser.add_argument(
+        "--output-report",
+        default="eval/benchmark_report.txt",
+        help="Output text file for the formatted report (default: eval/benchmark_report.txt)",
     )
     parser.add_argument(
         "--n-bootstrap",
@@ -561,6 +566,12 @@ def main(argv: Optional[List[str]] = None) -> None:
     stats_df = build_stats_table(df, n_bootstrap=args.n_bootstrap)
 
     print_stats_summary(stats_df)
+
+    # --- Save formatted report ---
+    os.makedirs(os.path.dirname(args.output_report) or ".", exist_ok=True)
+    with open(args.output_report, "w", encoding="utf-8") as f:
+        print_stats_summary(stats_df, file=f)
+    print(f"Saved formatted report to '{args.output_report}'")
 
     # --- Save compact version (no confusion matrix cells) ---
     cm_cols = [c for c in stats_df.columns if c.startswith("cm_")]
