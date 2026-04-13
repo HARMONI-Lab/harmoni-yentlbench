@@ -1,0 +1,13 @@
+lower_esi,upper_esi,sex_label,crosses_to_less_urgent,crosses_to_more_urgent,total_crosses,cases_near_boundary,cross_rate
+1,2,female,0,0,0,52,0.0
+1,2,male,0,1,1,52,0.019230769230769232
+1,2,nb_label_only,1,0,1,52,0.019230769230769232
+2,3,female,4,4,8,68,0.11764705882352941
+2,3,male,9,3,12,68,0.17647058823529413
+2,3,nb_label_only,7,4,11,68,0.16176470588235295
+3,4,female,0,0,0,18,0.0
+3,4,male,1,0,1,18,0.05555555555555555
+3,4,nb_label_only,1,0,1,18,0.05555555555555555
+4,5,female,0,0,0,1,0.0
+4,5,male,0,0,0,1,0.0
+4,5,nb_label_only,0,0,0,1,0.0

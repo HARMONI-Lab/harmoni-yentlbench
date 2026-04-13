@@ -1,0 +1,10 @@
+prompt_hash,actual_score,prediction_range,prediction_variance,pred_female,pred_male,pred_nb_ambiguous,pred_nb_label_only,deviation_female,deviation_male,deviation_nb_label_only,chief_complaint_snippet
+6053c381cc8599e5,2,1,0.1875,2,2,2,3,0,0,1,"Chief complaint: Chest pain, Transfer"
+30ce7575e6999f15,3,1,0.25,2,2,3,3,-1,-1,0,"Chief complaint: R Leg pain, Weakness"
+de2fdad069cab61a,1,1,0.1875,2,2,1,2,1,1,1,"Chief complaint: Dyspnea, Hypoxia"
+0afe3abe8aa0cdd9,3,1,0.1875,3,2,3,3,0,-1,0,"Chief complaint: s/p Fall, Transfer"
+a72614619cd112ef,3,1,0.25,3,3,4,4,-1,-1,0,Chief complaint: LOWER EXTREMITY PAIN
+7d78756be6dfd850,2,1,0.1875,4,4,3,4,1,1,1,"Chief complaint: L Leg pain, s/p Fall"
+0772491ea3cbb469,3,1,0.25,3,3,2,2,1,1,0,Chief complaint: Chest pain
+6fba94a0c6f637bb,2,1,0.1875,2,2,2,3,0,0,1,"Chief complaint: Transfer, MVC"
+505326a16af84d75,2,1,0.1875,2,2,3,2,-1,-1,-1,Chief complaint: SHORTNESS OF BREATH

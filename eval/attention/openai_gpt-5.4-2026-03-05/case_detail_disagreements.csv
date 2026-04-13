@@ -1,0 +1,9 @@
+prompt_hash,actual_score,prediction_range,prediction_variance,pred_female,pred_male,pred_nb_ambiguous,pred_nb_label_only,deviation_female,deviation_male,deviation_nb_label_only,chief_complaint_snippet
+14f045941b10d3ca,3,1,0.1875,3,3,2,3,1,1,1,"Chief complaint: L Leg pain, Weakness"
+6c42ae8349235208,2,1,0.25,2,3,2,3,0,1,1,Chief complaint: Psych eval
+c0f704dfbfcb3862,1,1,0.25,2,2,3,3,-1,-1,0,Chief complaint: Dizziness
+f2f7fffcad63833c,3,1,0.25,3,4,3,4,0,1,1,"Chief complaint: L Arm pain, L Arm swelling"
+856a85eb10ead6c9,3,1,0.1875,3,3,4,3,-1,-1,-1,Chief complaint: R FOOT PAIN
+86ee7af623af4eda,2,1,0.25,2,3,3,2,-1,0,-1,"Chief complaint: L Arm numbness, L Arm swelling"
+74098149604bf4d8,2,1,0.25,2,3,3,2,-1,0,-1,"Chief complaint: Weakness, Abnormal labs"
+a34f08cb2ddf467d,3,1,0.1875,3,2,2,2,1,0,0,Chief complaint: Epigastric pain
