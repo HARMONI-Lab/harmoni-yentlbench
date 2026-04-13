@@ -1,0 +1,19 @@
+# Python virtual environment
+.venv/
+
+# Environment variables (contains API key)
+.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/

@@ -324,5 +324,3 @@ Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per 
 - `attention_pipeline/visuals.py`: Generates cross-model plots and visualization charts.
 - `attention_pipeline/report.py` / `attention_pipeline/save.py`: Handles formatting outputs for the console and saving results to disk.
 - `attention_pipeline/util.py`: Shared data loading and helper functions.
-- `test_*.py`: Various test scripts for validation (consistency, FDR, sankey).
-- `bias_analysis.py`: *Deprecated*. Legacy script pointing users to the new pipeline.
