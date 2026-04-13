@@ -57,7 +57,7 @@ def analyze_model(
     model: str,
     variant_cols: Dict[str, str],
 ) -> Dict[str, Any]:
-    """Run all 10 analyses for a single model.
+    """Run all 11 analyses for a single model.
 
     Returns a dict with all results keyed by analysis name,
     or an empty dict if no valid data is available.

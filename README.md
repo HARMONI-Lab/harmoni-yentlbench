@@ -164,6 +164,7 @@ results/
 ├── merged_evaluations.csv                  # Stage 1: All runs joined
 ├── benchmark_stats.csv                     # Stage 2: Per-run metrics (compact)
 ├── benchmark_stats_full.csv                # Stage 2: Including confusion matrices
+├── benchmark_report.txt                    # Stage 2: Formatted text report
 │
 └── attention/                              # Stage 3: Deep attention analysis
     ├── cross_model_attention_summary.csv   #   Model ranking table
@@ -294,9 +295,24 @@ python merge_runs.py --results-dir results --output eval/merged_evaluations.csv 
 - `--include-metrics`: Retains token counts and latency metrics.
 - `--verbose`: Enables debug logging.
 
-### Step 2: Run the Analysis Pipeline
+### Step 2: Compute Benchmark Statistics (Optional)
 
-Once the data is merged, pass the CSV to the orchestrator pipeline. This script discovers all evaluated models and runs the 11-step analysis suite against them.
+Once the data is merged, you can optionally compute per-run performance metrics:
+
+```bash
+python benchmark_stats.py --input eval/merged_evaluations.csv --output eval/benchmark_stats.csv --output-full eval/benchmark_stats_full.csv --output-report eval/benchmark_report.txt --verbose
+```
+**Arguments:**
+- `--input`: Path to the merged CSV from Step 1.
+- `--output`: Output CSV for summary statistics (default: eval/benchmark_stats.csv).
+- `--output-full`: Output CSV with detailed metrics including confusion matrices (default: eval/benchmark_stats_full.csv).
+- `--output-report`: Output text file for formatted report (default: eval/benchmark_report.txt).
+- `--n-bootstrap`: Number of bootstrap samples for confidence intervals (default: 1000).
+- `--verbose`: Enables debug logging.
+
+### Step 3: Run the Analysis Pipeline
+
+Now pass the merged CSV to the orchestrator pipeline. This script discovers all evaluated models and runs the 11-step analysis suite against them.
 
 ```bash
 python attention_pipeline/pipeline.py --input eval/merged_evaluations.csv --output-dir eval/attention --verbose
