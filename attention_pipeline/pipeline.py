@@ -2,7 +2,7 @@
 """
 ESI Triage Gender Attention Analysis — Pipeline Orchestrator
 
-Runs all 10 analyses for each model discovered in the merged evaluations CSV,
+Runs all 11 analyses for each model discovered in the merged evaluations CSV,
 prints per-model and cross-model reports, and saves all outputs.
 
 Usage:
