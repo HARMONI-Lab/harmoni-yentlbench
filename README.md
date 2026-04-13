@@ -74,7 +74,7 @@ Reads raw JSON result files produced by the batch evaluation harness. Each file 
 - Validates that `actual_score` (ground truth) is consistent across all runs for the same case
 - Detects and prevents column name collisions via composite run labels (`{variant}__{model}`)
 
-**Output**: `results/merged_evaluations.csv`
+**Output**: `eval/merged_evaluations.csv`
 
 ### Stage 2: `benchmark_stats.py` — Per-Run Performance Metrics
 
@@ -85,7 +85,7 @@ Computes comprehensive classification and ordinal metrics for every run (model �
 - **Clinical safety**: ESI-1 sensitivity (do we catch every resuscitation-level patient?), high-acuity accuracy (ESI 1–2), severe under-triage rate (ESI 1–2 patients classified as ESI 3+), critical under-triage rate (ESI 1–2 classified as ESI 4–5)
 - **Confidence intervals**: Bootstrap 95% CIs (1000 samples) for accuracy, balanced accuracy, Cohen's κ, F1 macro, and MAE — essential for determining whether differences between runs are statistically meaningful or within sampling noise
 
-**Outputs**: `results/benchmark_stats.csv` (compact), `results/benchmark_stats_full.csv` (includes 5×5 confusion matrix cells)
+**Outputs**: `eval/benchmark_stats.csv` (compact), `eval/benchmark_stats_full.csv` (includes 5×5 confusion matrix cells)
 
 ### Stage 3: `attention_pipeline/` — Deep Attention Analysis (11 Analyses)
 
@@ -324,5 +324,3 @@ Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per 
 - `attention_pipeline/visuals.py`: Generates cross-model plots and visualization charts.
 - `attention_pipeline/report.py` / `attention_pipeline/save.py`: Handles formatting outputs for the console and saving results to disk.
 - `attention_pipeline/util.py`: Shared data loading and helper functions.
-- `test_*.py`: Various test scripts for validation (consistency, FDR, sankey).
-- `bias_analysis.py`: *Deprecated*. Legacy script pointing users to the new pipeline.
