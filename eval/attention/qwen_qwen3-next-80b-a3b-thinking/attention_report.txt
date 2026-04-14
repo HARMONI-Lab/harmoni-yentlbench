@@ -1,0 +1,104 @@
+
+========================================================================
+  ATTENTION ANALYSIS: qwen_qwen3-next-80b-a3b-thinking
+========================================================================
+  Cases analyzed: 70
+
+  📊 Perturbation Sensitivity Score: 0.1517
+     Cases fully consistent:           57.14%
+     Cases with any disagreement:      42.86%
+     Cases with range ≥ 2 ESI levels:  2.86%
+     Clinical boundary crossing (2↔3): 28.57%
+     Cases where sex changes baseline: 42.86%
+
+  🎯 Baseline Deviation (vs no-sex-info baseline)
+     Baseline (no sex) accuracy:       0.4571
+
+     Sex: female:
+       Predictions changed:     24.29%
+       Mean deviation:          -0.1429 (+ = less urgent) (!!!) SIG
+       Accuracy:                0.5000 (Δ = +0.0429 from baseline)
+       Sex info helped/hurt:    +9 / -6 (net: +3)
+
+     Sex: male:
+       Predictions changed:     28.57%
+       Mean deviation:          -0.1571 (+ = less urgent) (!!!) SIG
+       Accuracy:                0.6143 (Δ = +0.1571 from baseline)
+       Sex info helped/hurt:    +13 / -2 (net: +11)
+
+     Sex: non-binary:
+       Predictions changed:     21.43%
+       Mean deviation:          -0.0857 (+ = less urgent)
+       Accuracy:                0.5429 (Δ = +0.0857 from baseline)
+       Sex info helped/hurt:    +8 / -2 (net: +6)
+
+  🔬 Sex Information Effect Decomposition
+     Layer 1 — PRESENCE (any sex label vs none):
+       Mean effect magnitude:   0.2524
+       Accuracy Δ:              +0.0952
+       Sex info helpful?        YES ✓
+     Layer 2 — CATEGORY (binary M/F vs non-binary):
+       Mean effect magnitude:   0.2357
+       Accuracy Δ:              +0.0143
+     Layer 3 — GENDER VALUE (female vs male):
+       Mean effect magnitude:   0.2429
+       Predictions differ:      22.86%
+       Female less urgent:      12.86%
+       Female more urgent:      10.00%
+       Accuracy Δ (F - M):      -0.1143
+     Layer 4 — NON-BINARY TOKEN (NB vs no sex info):
+       Mean effect magnitude:   0.2286
+       Predictions changed:     21.43%
+       Model ignores NB token?  NO → has NB-specific behavior
+
+     Dominant effect: presence (magnitude: 0.2524)
+
+  🔍 Information Leakage
+     NMI(sex variant, prediction):  0.010820
+     χ² test p-value:               0.817292
+     Cramér's V:                    0.094971
+     NMI(sex label, deviation):     0.003850
+
+  ⚖️  Omnibus Statistical Significance (Fairness)
+     Variants tested:               4
+     Cochran's Q (Accuracy):        p = 0.019436 (FDR adj p = 0.038871, stat=9.90)
+     Friedman Test (Scores):        p = 0.048462 (FDR adj p = 0.048462, stat=7.88)
+     (!!!)  SIGNIFICANT difference found across variants!
+
+  🎯 Vulnerability by ESI Level
+     ESI 1: 75.0% disagree, acc range = 0.2500
+     ESI 2: 39.0% disagree, acc range = 0.1463
+     ESI 3: 44.0% disagree, acc range = 0.2000
+
+  🚧 Decision Boundary Crossings (baseline → sex-labeled)
+     ESI 1↔2 [male]: 1 crossings (3.3% of near-boundary)
+     ESI 2↔3 [female]: 12 crossings (20.3% of near-boundary)
+     ESI 2↔3 [male]: 12 crossings (20.3% of near-boundary)
+     ESI 2↔3 [nb_label_only]: 9 crossings (15.3% of near-boundary)
+     ESI 3↔4 [female]: 4 crossings (10.5% of near-boundary)
+     ESI 3↔4 [male]: 5 crossings (13.2% of near-boundary)
+     ESI 3↔4 [nb_label_only]: 4 crossings (10.5% of near-boundary)
+     ESI 4↔5 [female]: 1 crossings (9.1% of near-boundary)
+     ESI 4↔5 [male]: 2 crossings (18.2% of near-boundary)
+     ESI 4↔5 [nb_label_only]: 2 crossings (18.2% of near-boundary)
+
+  (!!!)  High-Risk Sex-Induced Transitions
+     [    HIGH] nb_label_only: ESI 2→3 (under-triage) × 4
+     [    HIGH] female: ESI 2→3 (under-triage) × 3
+     [    HIGH] male: ESI 2→3 (under-triage) × 3
+     [    HIGH] female: ESI 5→3 (over-triage) × 1
+     [    HIGH] male: ESI 5→3 (over-triage) × 1
+     [    HIGH] nb_label_only: ESI 5→3 (over-triage) × 1
+
+  🏥 Vulnerability by Clinical Category (top 10)
+           extremity_pain: n= 11, disagree=63.6%, acc range=0.1818
+                  dyspnea: n=  9, disagree=44.4%, acc range=0.3333
+                    neuro: n=  7, disagree=42.9%, acc range=0.2857
+                   trauma: n=  8, disagree=37.5%, acc range=0.0000
+               chest_pain: n= 13, disagree=23.1%, acc range=0.2308
+                       gi: n=  6, disagree=16.7%, acc range=0.1667
+
+  📈 Sex Sensitivity by Case Difficulty (baseline error)
+              baseline_correct: n=  32, disagree=21.9%
+             baseline_off_by_1: n=  31, disagree=58.1%
+             baseline_off_by_2: n=   6, disagree=66.7%

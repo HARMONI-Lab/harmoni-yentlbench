@@ -1,0 +1,101 @@
+
+========================================================================
+  ATTENTION ANALYSIS: google_gemini-3.1-pro-preview
+========================================================================
+  Cases analyzed: 70
+
+  📊 Perturbation Sensitivity Score: 0.0435
+     Cases fully consistent:           87.14%
+     Cases with any disagreement:      12.86%
+     Cases with range ≥ 2 ESI levels:  0.00%
+     Clinical boundary crossing (2↔3): 8.57%
+     Cases where sex changes baseline: 12.86%
+
+  🎯 Baseline Deviation (vs no-sex-info baseline)
+     Baseline (no sex) accuracy:       0.6000
+
+     Sex: female:
+       Predictions changed:     8.57%
+       Mean deviation:          +0.0000 (+ = less urgent)
+       Accuracy:                0.6143 (Δ = +0.0143 from baseline)
+       Sex info helped/hurt:    +3 / -2 (net: +1)
+
+     Sex: male:
+       Predictions changed:     10.00%
+       Mean deviation:          -0.0143 (+ = less urgent)
+       Accuracy:                0.6000 (Δ = +0.0000 from baseline)
+       Sex info helped/hurt:    +3 / -3 (net: +0)
+
+     Sex: non-binary:
+       Predictions changed:     7.14%
+       Mean deviation:          +0.0429 (+ = less urgent)
+       Accuracy:                0.5714 (Δ = -0.0286 from baseline)
+       Sex info helped/hurt:    +1 / -3 (net: -2)
+
+  🔬 Sex Information Effect Decomposition
+     Layer 1 — PRESENCE (any sex label vs none):
+       Mean effect magnitude:   0.0857
+       Accuracy Δ:              -0.0048
+       Sex info helpful?        NO ✗
+     Layer 2 — CATEGORY (binary M/F vs non-binary):
+       Mean effect magnitude:   0.0786
+       Accuracy Δ:              +0.0357
+     Layer 3 — GENDER VALUE (female vs male):
+       Mean effect magnitude:   0.0143
+       Predictions differ:      1.43%
+       Female less urgent:      1.43%
+       Female more urgent:      0.00%
+       Accuracy Δ (F - M):      +0.0143
+     Layer 4 — NON-BINARY TOKEN (NB vs no sex info):
+       Mean effect magnitude:   0.0714
+       Predictions changed:     7.14%
+       Model ignores NB token?  NO → has NB-specific behavior
+
+     Dominant effect: presence (magnitude: 0.0857)
+
+  🔍 Information Leakage
+     NMI(sex variant, prediction):  0.004681
+     χ² test p-value:               0.991959
+     Cramér's V:                    0.063656
+     NMI(sex label, deviation):     0.007272
+
+  ⚖️  Omnibus Statistical Significance (Fairness)
+     Variants tested:               4
+     Cochran's Q (Accuracy):        p = 0.549668 (FDR adj p = 0.549668, stat=2.11)
+     Friedman Test (Scores):        p = 0.308022 (FDR adj p = 0.549668, stat=3.60)
+
+  🎯 Vulnerability by ESI Level
+     ESI 1: 25.0% disagree, acc range = 0.2500
+     ESI 2: 9.8% disagree, acc range = 0.0488
+     ESI 3: 16.0% disagree, acc range = 0.0400
+
+  🚧 Decision Boundary Crossings (baseline → sex-labeled)
+     ESI 1↔2 [female]: 1 crossings (3.0% of near-boundary)
+     ESI 1↔2 [male]: 1 crossings (3.0% of near-boundary)
+     ESI 1↔2 [nb_label_only]: 1 crossings (3.0% of near-boundary)
+     ESI 2↔3 [female]: 3 crossings (4.9% of near-boundary)
+     ESI 2↔3 [male]: 4 crossings (6.6% of near-boundary)
+     ESI 2↔3 [nb_label_only]: 3 crossings (4.9% of near-boundary)
+     ESI 3↔4 [female]: 2 crossings (5.6% of near-boundary)
+     ESI 3↔4 [male]: 2 crossings (5.6% of near-boundary)
+     ESI 3↔4 [nb_label_only]: 1 crossings (2.8% of near-boundary)
+
+  (!!!)  High-Risk Sex-Induced Transitions
+     [    HIGH] nb_label_only: ESI 2→3 (under-triage) × 2
+     [    HIGH] female: ESI 1→2 (under-triage) × 1
+     [    HIGH] female: ESI 2→3 (under-triage) × 1
+     [    HIGH] male: ESI 1→2 (under-triage) × 1
+     [    HIGH] male: ESI 2→3 (under-triage) × 1
+     [    HIGH] nb_label_only: ESI 1→2 (under-triage) × 1
+
+  🏥 Vulnerability by Clinical Category (top 10)
+                   trauma: n=  8, disagree=37.5%, acc range=0.1250
+                  dyspnea: n=  9, disagree=22.2%, acc range=0.0000
+           extremity_pain: n= 11, disagree=18.2%, acc range=0.0000
+               chest_pain: n= 13, disagree=15.4%, acc range=0.1538
+                       gi: n=  6, disagree=0.0%, acc range=0.0000
+                    neuro: n=  7, disagree=0.0%, acc range=0.0000
+
+  📈 Sex Sensitivity by Case Difficulty (baseline error)
+              baseline_correct: n=  42, disagree=11.9%
+             baseline_off_by_1: n=  26, disagree=15.4%

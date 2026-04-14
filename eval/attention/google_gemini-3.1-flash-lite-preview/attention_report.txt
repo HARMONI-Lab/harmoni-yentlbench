@@ -1,0 +1,95 @@
+
+========================================================================
+  ATTENTION ANALYSIS: google_gemini-3.1-flash-lite-preview
+========================================================================
+  Cases analyzed: 70
+
+  📊 Perturbation Sensitivity Score: 0.0624
+     Cases fully consistent:           81.43%
+     Cases with any disagreement:      18.57%
+     Cases with range ≥ 2 ESI levels:  0.00%
+     Clinical boundary crossing (2↔3): 11.43%
+     Cases where sex changes baseline: 18.57%
+
+  🎯 Baseline Deviation (vs no-sex-info baseline)
+     Baseline (no sex) accuracy:       0.4857
+
+     Sex: female:
+       Predictions changed:     8.57%
+       Mean deviation:          -0.0571 (+ = less urgent)
+       Accuracy:                0.5429 (Δ = +0.0571 from baseline)
+       Sex info helped/hurt:    +5 / -1 (net: +4)
+
+     Sex: male:
+       Predictions changed:     14.29%
+       Mean deviation:          -0.0571 (+ = less urgent)
+       Accuracy:                0.5571 (Δ = +0.0714 from baseline)
+       Sex info helped/hurt:    +7 / -2 (net: +5)
+
+     Sex: non-binary:
+       Predictions changed:     12.86%
+       Mean deviation:          -0.0714 (+ = less urgent)
+       Accuracy:                0.5143 (Δ = +0.0286 from baseline)
+       Sex info helped/hurt:    +5 / -3 (net: +2)
+
+  🔬 Sex Information Effect Decomposition
+     Layer 1 — PRESENCE (any sex label vs none):
+       Mean effect magnitude:   0.1190
+       Accuracy Δ:              +0.0524
+       Sex info helpful?        YES ✓
+     Layer 2 — CATEGORY (binary M/F vs non-binary):
+       Mean effect magnitude:   0.0857
+       Accuracy Δ:              +0.0357
+     Layer 3 — GENDER VALUE (female vs male):
+       Mean effect magnitude:   0.0857
+       Predictions differ:      8.57%
+       Female less urgent:      4.29%
+       Female more urgent:      4.29%
+       Accuracy Δ (F - M):      -0.0143
+     Layer 4 — NON-BINARY TOKEN (NB vs no sex info):
+       Mean effect magnitude:   0.1286
+       Predictions changed:     12.86%
+       Model ignores NB token?  NO → has NB-specific behavior
+
+     Dominant effect: nb_token (magnitude: 0.1286)
+
+  🔍 Information Leakage
+     NMI(sex variant, prediction):  0.002114
+     χ² test p-value:               0.997706
+     Cramér's V:                    0.041097
+     NMI(sex label, deviation):     0.005060
+
+  ⚖️  Omnibus Statistical Significance (Fairness)
+     Variants tested:               4
+     Cochran's Q (Accuracy):        p = 0.188332 (FDR adj p = 0.249179, stat=4.78)
+     Friedman Test (Scores):        p = 0.249179 (FDR adj p = 0.249179, stat=4.12)
+
+  🎯 Vulnerability by ESI Level
+     ESI 1: 0.0% disagree, acc range = 0.0000
+     ESI 2: 22.0% disagree, acc range = 0.1220
+     ESI 3: 16.0% disagree, acc range = 0.0800
+
+  🚧 Decision Boundary Crossings (baseline → sex-labeled)
+     ESI 2↔3 [female]: 3 crossings (4.9% of near-boundary)
+     ESI 2↔3 [male]: 7 crossings (11.5% of near-boundary)
+     ESI 2↔3 [nb_label_only]: 6 crossings (9.8% of near-boundary)
+     ESI 3↔4 [female]: 3 crossings (6.8% of near-boundary)
+     ESI 3↔4 [male]: 3 crossings (6.8% of near-boundary)
+     ESI 3↔4 [nb_label_only]: 3 crossings (6.8% of near-boundary)
+
+  (!!!)  High-Risk Sex-Induced Transitions
+     [    HIGH] male: ESI 2→3 (under-triage) × 1
+     [    HIGH] nb_label_only: ESI 2→3 (under-triage) × 1
+
+  🏥 Vulnerability by Clinical Category (top 10)
+                    neuro: n=  7, disagree=28.6%, acc range=0.2857
+           extremity_pain: n= 11, disagree=27.3%, acc range=0.1818
+                  dyspnea: n=  9, disagree=22.2%, acc range=0.2222
+               chest_pain: n= 13, disagree=7.7%, acc range=0.0769
+                       gi: n=  6, disagree=0.0%, acc range=0.0000
+                   trauma: n=  8, disagree=0.0%, acc range=0.0000
+
+  📈 Sex Sensitivity by Case Difficulty (baseline error)
+              baseline_correct: n=  34, disagree=8.8%
+             baseline_off_by_1: n=  32, disagree=28.1%
+             baseline_off_by_2: n=   4, disagree=25.0%

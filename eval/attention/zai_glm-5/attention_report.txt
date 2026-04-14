@@ -1,0 +1,97 @@
+
+========================================================================
+  ATTENTION ANALYSIS: zai_glm-5
+========================================================================
+  Cases analyzed: 70
+
+  📊 Perturbation Sensitivity Score: 0.1122
+     Cases fully consistent:           67.14%
+     Cases with any disagreement:      32.86%
+     Cases with range ≥ 2 ESI levels:  1.43%
+     Clinical boundary crossing (2↔3): 28.57%
+     Cases where sex changes baseline: 32.86%
+
+  🎯 Baseline Deviation (vs no-sex-info baseline)
+     Baseline (no sex) accuracy:       0.6286
+
+     Sex: female:
+       Predictions changed:     11.43%
+       Mean deviation:          -0.0286 (+ = less urgent)
+       Accuracy:                0.5571 (Δ = -0.0714 from baseline)
+       Sex info helped/hurt:    +1 / -6 (net: -5)
+
+     Sex: male:
+       Predictions changed:     12.86%
+       Mean deviation:          -0.0714 (+ = less urgent)
+       Accuracy:                0.6000 (Δ = -0.0286 from baseline)
+       Sex info helped/hurt:    +3 / -5 (net: -2)
+
+     Sex: non-binary:
+       Predictions changed:     17.14%
+       Mean deviation:          +0.0571 (+ = less urgent)
+       Accuracy:                0.6000 (Δ = -0.0286 from baseline)
+       Sex info helped/hurt:    +5 / -7 (net: -2)
+
+  🔬 Sex Information Effect Decomposition
+     Layer 1 — PRESENCE (any sex label vs none):
+       Mean effect magnitude:   0.1286
+       Accuracy Δ:              -0.0429
+       Sex info helpful?        NO ✗
+     Layer 2 — CATEGORY (binary M/F vs non-binary):
+       Mean effect magnitude:   0.2357
+       Accuracy Δ:              -0.0214
+     Layer 3 — GENDER VALUE (female vs male):
+       Mean effect magnitude:   0.2143
+       Predictions differ:      20.00%
+       Female less urgent:      11.43%
+       Female more urgent:      8.57%
+       Accuracy Δ (F - M):      -0.0429
+     Layer 4 — NON-BINARY TOKEN (NB vs no sex info):
+       Mean effect magnitude:   0.1714
+       Predictions changed:     17.14%
+       Model ignores NB token?  NO → has NB-specific behavior
+
+     Dominant effect: binary_vs_nb (magnitude: 0.2357)
+
+  🔍 Information Leakage
+     NMI(sex variant, prediction):  0.013432
+     χ² test p-value:               0.829257
+     Cramér's V:                    0.093933
+     NMI(sex label, deviation):     0.016465
+
+  ⚖️  Omnibus Statistical Significance (Fairness)
+     Variants tested:               4
+     Cochran's Q (Accuracy):        p = 0.528531 (FDR adj p = 0.528531, stat=2.22)
+     Friedman Test (Scores):        p = 0.112594 (FDR adj p = 0.225188, stat=5.98)
+
+  🎯 Vulnerability by ESI Level
+     ESI 1: 25.0% disagree, acc range = 0.2500
+     ESI 2: 26.8% disagree, acc range = 0.1220
+     ESI 3: 44.0% disagree, acc range = 0.2000
+
+  🚧 Decision Boundary Crossings (baseline → sex-labeled)
+     ESI 1↔2 [female]: 1 crossings (2.0% of near-boundary)
+     ESI 1↔2 [nb_label_only]: 2 crossings (4.1% of near-boundary)
+     ESI 2↔3 [female]: 5 crossings (7.5% of near-boundary)
+     ESI 2↔3 [male]: 8 crossings (11.9% of near-boundary)
+     ESI 2↔3 [nb_label_only]: 9 crossings (13.4% of near-boundary)
+     ESI 3↔4 [female]: 2 crossings (10.0% of near-boundary)
+     ESI 3↔4 [male]: 1 crossings (5.0% of near-boundary)
+     ESI 3↔4 [nb_label_only]: 1 crossings (5.0% of near-boundary)
+
+  (!!!)  High-Risk Sex-Induced Transitions
+     [    HIGH] nb_label_only: ESI 2→3 (under-triage) × 7
+     [    HIGH] female: ESI 2→3 (under-triage) × 2
+     [    HIGH] male: ESI 2→3 (under-triage) × 2
+
+  🏥 Vulnerability by Clinical Category (top 10)
+                  dyspnea: n=  9, disagree=66.7%, acc range=0.3333
+           extremity_pain: n= 11, disagree=54.5%, acc range=0.1818
+                   trauma: n=  8, disagree=50.0%, acc range=0.1250
+                       gi: n=  6, disagree=50.0%, acc range=0.3333
+                    neuro: n=  7, disagree=14.3%, acc range=0.1429
+               chest_pain: n= 13, disagree=0.0%, acc range=0.0000
+
+  📈 Sex Sensitivity by Case Difficulty (baseline error)
+              baseline_correct: n=  44, disagree=31.8%
+             baseline_off_by_1: n=  24, disagree=33.3%

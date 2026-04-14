@@ -1,6 +1,33 @@
 We adapt perturbation sensitivity analysis to clinical demographic auditing, operationalizing a Perturbation Sensitivity Score (PSS) for sex-label token substitution in ESI triage and pairing it with a four-layer decomposition framework to isolate the mechanism of demographic attention leak.
 
+The PSS is computed as:
+
+`PSS = (mean_disagreement + mean_variance + mean_range / 4) / 3`
+
+where `mean_range / 4` normalizes the prediction range because ESI values span 1 to 5, giving a maximum possible range of 4.
+
 # ESI Triage Gender Bias & Attention Analysis
+
+## Table of Contents
+- [Overview](#overview)
+- [How It Works](#how-it-works)
+- [Pipeline Architecture](#pipeline-architecture)
+  - [Stage 1: `merge_runs.py` — Run Ingestion and Alignment](#stage-1-merge_runspy--run-ingestion-and-alignment)
+  - [Stage 2: `benchmark_stats.py` — Per-Run Performance Metrics](#stage-2-benchmark_statspy--per-run-performance-metrics)
+  - [Stage 3: `attention_pipeline/` — Deep Attention Analysis (11 Analyses)](#stage-3-attention_pipeline--deep-attention-analysis-11-analyses)
+- [Output Structure](#output-structure)
+- [Clinical Significance](#clinical-significance)
+- [Installation](#installation)
+- [Expected Data Format](#expected-data-format)
+  - [File Naming Convention](#file-naming-convention)
+  - [Supported Demographic Variants](#supported-demographic-variants)
+  - [JSON Structure](#json-structure)
+- [Usage](#usage)
+  - [Step 1: Merge Runs](#step-1-merge-runs)
+  - [Step 2: Compute Benchmark Statistics (Optional)](#step-2-compute-benchmark-statistics-optional)
+  - [Step 3: Run the Analysis Pipeline](#step-3-run-the-analysis-pipeline)
+- [Interpreting the Output](#interpreting-the-output)
+- [Project Structure](#project-structure)
 
 ## Overview
 
@@ -164,15 +191,30 @@ results/
 ├── merged_evaluations.csv                  # Stage 1: All runs joined
 ├── benchmark_stats.csv                     # Stage 2: Per-run metrics (compact)
 ├── benchmark_stats_full.csv                # Stage 2: Including confusion matrices
+├── benchmark_report.txt                    # Stage 2: Formatted text report
 │
 └── attention/                              # Stage 3: Deep attention analysis
     ├── cross_model_attention_summary.csv   #   Model ranking table
+    ├── cross_model_attention_report.txt    #   Formatted text report summarizing cross-model attention ranking
     ├── all_models_pairwise.csv             #   Combined pairwise across models
     ├── all_models_dangerous_transitions.csv#   All flagged transitions
     ├── pss_ranking_bar_chart.png           #   Visual ranking of models by sensitivity
     ├── esi_2_to_3_undertriage_stacked_bar.png # Visual of undertriage events
+    ├── four_layer_decomposition_heatmap.png #  Four-Layer effect decomposition by model
+    ├── accuracy_by_condition_grouped_bar.png # Exact match accuracy by sex-label condition
+    ├── male_anchor_effect_dumbbell.png     #   Accuracy delta: the male anchor effect
+    ├── esi_score_distribution_grouped_bar.png # Score distribution across models by condition
+    ├── transition_sankey_diagram.png       #   Aggregated ESI score transitions
+    ├── clinical_category_vulnerability_heatmap.png # Clinical category vulnerability by model
+    ├── per_vignette_disagreement_strip.png #   Per-vignette disagreement (ESI shift)
+    ├── pairwise_confusion_matrices.png     #   Pairwise condition confusion matrices
+    ├── family_condition_interaction_plot.png # Model family × condition interaction
+    ├── mean_esi_deviation_diverging_bar.png #  Mean signed ESI deviation by condition vs. baseline
+    ├── statistical_significance_volcano.png #  Statistical significance vs. effect size
+    ├── counterfactual_vignette_panel_case_*.png # Counterfactual vignette examples (15 cases)
     │
     ├── openai_gpt-5.4-2026-03-05/         #   Per-model directory
+    │   ├── attention_report.txt            #     Formatted text report with detailed attention metrics
     │   ├── model_attention_summary.csv     #     Flat summary of all metrics
     │   ├── transition_female.csv           #     5×5 baseline→female matrix
     │   ├── transition_male.csv             #     5×5 baseline→male matrix
@@ -294,9 +336,24 @@ python merge_runs.py --results-dir results --output eval/merged_evaluations.csv 
 - `--include-metrics`: Retains token counts and latency metrics.
 - `--verbose`: Enables debug logging.
 
-### Step 2: Run the Analysis Pipeline
+### Step 2: Compute Benchmark Statistics (Optional)
 
-Once the data is merged, pass the CSV to the orchestrator pipeline. This script discovers all evaluated models and runs the 11-step analysis suite against them.
+Once the data is merged, you can optionally compute per-run performance metrics:
+
+```bash
+python benchmark_stats.py --input eval/merged_evaluations.csv --output eval/benchmark_stats.csv --output-full eval/benchmark_stats_full.csv --output-report eval/benchmark_report.txt --verbose
+```
+**Arguments:**
+- `--input`: Path to the merged CSV from Step 1.
+- `--output`: Output CSV for summary statistics (default: eval/benchmark_stats.csv).
+- `--output-full`: Output CSV with detailed metrics including confusion matrices (default: eval/benchmark_stats_full.csv).
+- `--output-report`: Output text file for formatted report (default: eval/benchmark_report.txt).
+- `--n-bootstrap`: Number of bootstrap samples for confidence intervals (default: 1000).
+- `--verbose`: Enables debug logging.
+
+### Step 3: Run the Analysis Pipeline
+
+Now pass the merged CSV to the orchestrator pipeline. This script discovers all evaluated models and runs the 11-step analysis suite against them.
 
 ```bash
 python attention_pipeline/pipeline.py --input eval/merged_evaluations.csv --output-dir eval/attention --verbose
@@ -316,6 +373,7 @@ When the pipeline finishes, it will print a **Cross-Model Attention Ranking** to
 Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per model, including dangerous triage transitions and category-specific vulnerability matrices.
 
 ## Project Structure
+- `dataset_prep.py`: Prepares MIMIC-IV-ED demo data, handles the gender quintet expansion, and filters out complaints where sex is a legitimate clinical variable (e.g., abdominal pain).
 - `merge_runs.py`: Parses and joins JSON output files.
 - `benchmark_stats.py`: Computes per-run benchmark statistics.
 - `attention_pipeline/pipeline.py`: Main orchestrator for the analysis suite.
