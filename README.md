@@ -163,7 +163,7 @@ Builds 5×5 transition matrices showing exactly which ESI levels shift to which 
 
 Quantifies how much information about the patient's sex can be recovered from the model's predictions alone. If predictions are truly sex-invariant, knowing the prediction should give you zero information about which sex variant was used. Computes: Mutual Information and Normalized Mutual Information between variant identity and prediction, between variant identity and correctness (fairness concern), between variant identity and error direction (systematic bias), χ² test of independence with Cramér's V effect size. Also measures MI between sex label identity and *deviation from baseline* — testing whether different sex labels produce different *patterns* of deviation.
 
-#### Analysis 5 — Perturbation Sensitivity Scoring
+#### Analysis 5. Perturbation Sensitivity Scoring
 
 Produces a single composite score per model capturing total sensitivity to sex perturbation, combining: mean pairwise disagreement rate across all 6 variant pairs, mean per-case prediction variance across variants, mean per-case prediction range. Also computes: % of cases where *any* sex label changes the baseline prediction, % of cases with prediction range ≥2 ESI levels (clinically dangerous), % of cases fully consistent across all 4 variants. This score is the primary metric for **ranking models by sex-invariance**.
 
