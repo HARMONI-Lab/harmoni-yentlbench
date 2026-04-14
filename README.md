@@ -127,11 +127,11 @@ Computes comprehensive classification and ordinal metrics for every run (model �
 
 The core analytical engine. For each model, runs 11 complementary analyses that probe *how*, *where*, and *why* the model attends to sex information:
 
-#### Analysis 1 — Baseline Deviation
+#### Analysis 1. Baseline Deviation
 
 Measures how each sex-labeled variant's predictions deviate from the `nb_ambiguous` (no sex info) baseline. Since the baseline has zero sex signal, every deviation is caused *entirely* by the model reading the sex token. Computes: deviation rate (% of cases that change), mean signed deviation (positive = sex label makes prediction less urgent), mean absolute deviation, Wilcoxon signed-rank test for significance, binomial sign test for directional asymmetry, and per-ESI-level breakdown. Also counts cases where adding sex info *helped* vs *hurt* accuracy compared to baseline.
 
-#### Analysis 2 — Sex Information Effect Decomposition
+#### Analysis 2. Sex Information Effect Decomposition
 
 Decomposes the total sex-information effect into four orthogonal layers:
 
@@ -142,7 +142,7 @@ Decomposes the total sex-information effect into four orthogonal layers:
 
 Ranks the four layers by magnitude and identifies the *dominant* effect for each model.
 
-#### Analysis 3 — Transition Matrices & Clinical Risk Classification
+#### Analysis 3. Transition Matrices & Clinical Risk Classification
 
 Builds 5×5 transition matrices showing exactly which ESI levels shift to which when sex info is added. Each off-diagonal cell represents cases where the baseline predicted one ESI but the sex-labeled variant predicted a different ESI. Classifies every transition by clinical risk:
 
@@ -151,7 +151,7 @@ Builds 5×5 transition matrices showing exactly which ESI levels shift to which 
 - **MODERATE**: 1-level shift between lower-acuity levels
 - **LOW**: other non-zero shifts
 
-#### Analysis 4 — Information-Theoretic Leakage
+#### Analysis 4. Information-Theoretic Leakage
 
 Quantifies how much information about the patient's sex can be recovered from the model's predictions alone. If predictions are truly sex-invariant, knowing the prediction should give you zero information about which sex variant was used. Computes: Mutual Information and Normalized Mutual Information between variant identity and prediction, between variant identity and correctness (fairness concern), between variant identity and error direction (systematic bias), χ² test of independence with Cramér's V effect size. Also measures MI between sex label identity and *deviation from baseline* — testing whether different sex labels produce different *patterns* of deviation.
 
@@ -160,7 +160,7 @@ Quantifies how much information about the patient's sex can be recovered from th
 We adapt perturbation sensitivity analysis to clinical demographic auditing, operationalizing a Perturbation Sensitivity Score (PSS) for sex-label token substitution in ESI triage.
 The PSS is a single composite score per model capturing total sensitivity to sex perturbation, combining: mean pairwise disagreement rate across all 6 variant pairs, mean per-case prediction variance across variants, mean per-case prediction range. Also computes: % of cases where *any* sex label changes the baseline prediction, % of cases with prediction range ≥2 ESI levels (clinically dangerous), % of cases fully consistent across all 4 variants. This score is the primary metric for **ranking models by sex-invariance**.
 
-#### Analysis 6 — Vulnerability Profiling by ESI Level and Clinical Category
+#### Analysis 6. Vulnerability Profiling by ESI Level and Clinical Category
 
 Identifies *where* in the clinical space gender attention is concentrated:
 
@@ -169,23 +169,23 @@ Identifies *where* in the clinical space gender attention is concentrated:
 
 For each stratum: disagreement rate, accuracy range across variants, per-variant deviation from baseline.
 
-#### Analysis 7 — Decision Boundary Analysis
+#### Analysis 7. Decision Boundary Analysis
 
 Evaluates how often adding sex info pushes predictions across each adjacent ESI boundary (1↔2, 2↔3, 3↔4, 4↔5). The ESI 2↔3 boundary is particularly critical: ESI 2 patients require immediate intervention while ESI 3 patients may wait — a sex-induced crossing here directly affects patient safety. Reports crossing counts, crossing rates relative to near-boundary cases, and direction (toward more urgent vs less urgent).
 
-#### Analysis 8 — Consistency by Case Difficulty
+#### Analysis 8. Consistency by Case Difficulty
 
 Tests whether sex-sensitivity compounds with clinical uncertainty. Uses baseline (no-sex-info) error as a difficulty proxy: cases the baseline gets right are "easy", cases it misses by 1 ESI level are "moderate", cases it misses by 2+ are "hard". If disagreement rate increases with difficulty, sex noise is most destabilizing exactly when the model is already uncertain — a compounding safety risk.
 
-#### Analysis 9 — Case-Level Detail
+#### Analysis 9. Case-Level Detail
 
 Generates a per-case table with every variant's prediction, the deviation from baseline for each sex label, prediction range and variance across variants, and a chief complaint snippet for manual clinical review. Sorted by prediction range descending so the most affected cases appear first. Also exports a separate file containing only disagreement cases for focused review.
 
-#### Analysis 10 — Pairwise Comparisons
+#### Analysis 10. Pairwise Comparisons
 
 Computes agreement rate, mean signed difference, mean absolute difference, McNemar's test (exact binomial for small samples, χ² with continuity correction for large), Cohen's h effect size, and discordant case counts between every pair of the 4 variants. This produces 6 comparisons per model, with the most important being `nb_ambiguous` ↔ each labeled variant (causal effect of adding sex info) and `female` ↔ `male` (direct gender discrimination).
 
-#### Analysis 11 — Omnibus Statistical Significance
+#### Analysis 11. Omnibus Statistical Significance
 
 Computes omnibus statistical tests across all variants for each model to determine if there is a statistically significant effect across the group:
 - **Cochran's Q test**: Are accuracy rates (binary correctness) significantly different across all four variants? (A generalization of McNemar's test for >2 groups).
@@ -213,14 +213,11 @@ results/
     ├── four_layer_decomposition_heatmap.png #  Four-Layer effect decomposition by model
     ├── accuracy_by_condition_grouped_bar.png # Exact match accuracy by sex-label condition
     ├── male_anchor_effect_dumbbell.png     #   Accuracy delta: the male anchor effect
-    ├── esi_score_distribution_grouped_bar.png # Score distribution across models by condition
     ├── transition_sankey_diagram.png       #   Aggregated ESI score transitions
     ├── clinical_category_vulnerability_heatmap.png # Clinical category vulnerability by model
-    ├── per_vignette_disagreement_strip.png #   Per-vignette disagreement (ESI shift)
     ├── pairwise_confusion_matrices.png     #   Pairwise condition confusion matrices
     ├── family_condition_interaction_plot.png # Model family × condition interaction
     ├── mean_esi_deviation_diverging_bar.png #  Mean signed ESI deviation by condition vs. baseline
-    ├── statistical_significance_volcano.png #  Statistical significance vs. effect size
     ├── counterfactual_vignette_panel_case_*.png # Counterfactual vignette examples (15 cases)
     │
     ├── openai_gpt-5.4-2026-03-05/         #   Per-model directory
@@ -266,8 +263,8 @@ This pipeline provides the quantitative framework to answer:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/esi-triage-bias-eval.git
-   cd esi-triage-bias-eval
+   git clone https://github.com/HARMONI-Lab/harmoni-yentlbench.git
+   cd harmoni-yentlbench
    ```
 
 2. Create a virtual environment and install the requirements:

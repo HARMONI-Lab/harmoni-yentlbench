@@ -359,74 +359,7 @@ def generate_cross_model_visuals(all_results: List[Dict[str, Any]], output_dir: 
     plt.savefig(out_path_db, dpi=300, bbox_inches='tight')
     plt.close()
 
-    # 6. ESI Score Distribution Grouped Bar Chart
-    try:
-        raw_df = pd.read_csv("eval/merged_evaluations.csv")
-        
-        # Ground truth
-        gt_scores = raw_df["actual_score"].dropna().astype(int).tolist()
-        
-        dist_data = []
-        
-        # Add ground truth distribution for reference
-        for score in gt_scores:
-            dist_data.append({"Condition": "Ground Truth", "ESI Score": score})
-            
-        # Collect predictions across all models for key variants
-        pred_cols = [c for c in raw_df.columns if c.startswith("predicted_score__")]
-        
-        for col in pred_cols:
-            if col.endswith("__female"):
-                cond = "Female"
-            elif col.endswith("__male"):
-                cond = "Male"
-            elif col.endswith("__nb_ambiguous"):
-                cond = "No Label"
-            elif col.endswith("__nb_label_only"):
-                cond = "Non-binary"
-            else:
-                continue
-                
-            scores = raw_df[col].dropna().astype(int).tolist()
-            for score in scores:
-                dist_data.append({"Condition": cond, "ESI Score": score})
-                
-        df_dist = pd.DataFrame(dist_data)
-        
-        # Calculate percentages
-        dist_counts = df_dist.groupby(['Condition', 'ESI Score']).size().reset_index(name='Count')
-        dist_totals = dist_counts.groupby('Condition')['Count'].transform('sum')
-        dist_counts['Percentage'] = (dist_counts['Count'] / dist_totals) * 100
-        
-        plt.figure(figsize=(12, 6))
-        
-        conditions = ["Ground Truth", "No Label", "Male", "Female", "Non-binary"]
-        colors = ["black", "gray", "cornflowerblue", "lightcoral", "mediumseagreen"]
-        pal = dict(zip(conditions, colors))
-        
-        sns.barplot(
-            data=dist_counts,
-            x="ESI Score",
-            y="Percentage",
-            hue="Condition",
-            hue_order=conditions,
-            palette=pal
-        )
-        
-        plt.title("ESI Score Distribution Across All Models by Condition\n(Percentage of cases assigned to each ESI level)", pad=15)
-        plt.xlabel("ESI Score (1 = Most Urgent, 5 = Least Urgent)")
-        plt.ylabel("Percentage of Assigned Scores (%)")
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
-        plt.legend(title="Condition")
-        
-        out_path_dist = os.path.join(output_dir, "esi_score_distribution_grouped_bar.png")
-        plt.savefig(out_path_dist, dpi=300, bbox_inches='tight')
-        plt.close()
-        
-    except Exception as e:
-        print(f"Could not generate Distribution plot: {e}")
-
-    # 7. Transition Sankey Diagram
+    # 6. Transition Sankey Diagram
     try:
         import plotly.graph_objects as go
         
@@ -536,7 +469,7 @@ def generate_cross_model_visuals(all_results: List[Dict[str, Any]], output_dir: 
     except Exception as e:
         print(f"Error generating Sankey diagram: {e}")
 
-    # 8. Clinical Category Vulnerability Heatmap
+    # 7. Clinical Category Vulnerability Heatmap
     cat_data = []
     
     # Identify all unique categories present across all models
@@ -598,80 +531,7 @@ def generate_cross_model_visuals(all_results: List[Dict[str, Any]], output_dir: 
     plt.savefig(out_path_cat_hm, dpi=300, bbox_inches='tight')
     plt.close()
 
-    # 9. Per-Vignette Disagreement Strip Plot
-    from util import categorize_complaint
-    
-    try:
-        raw_df = pd.read_csv("eval/merged_evaluations.csv")
-        # Map prompt hash to category and a concise label
-        hash_to_cat = {}
-        hash_to_text = {}
-        for _, row in raw_df.iterrows():
-            ph = row["prompt_hash"]
-            prompt_text = str(row["prompt"])
-            cat = categorize_complaint(prompt_text)
-            hash_to_cat[ph] = cat
-            hash_to_text[ph] = prompt_text[:30] + "..."
-            
-        vignette_data = []
-        for res in all_results:
-            model_name = res["model"]
-            if "case_detail" in res:
-                df_case = res["case_detail"]
-                # case_detail is a DataFrame
-                for _, row in df_case.iterrows():
-                    ph = row["prompt_hash"]
-                    pr = row["prediction_range"]
-                    vignette_data.append({
-                        "Model": model_name,
-                        "Prompt Hash": ph,
-                        "Prediction Range": pr,
-                        "Category": hash_to_cat.get(ph, "Unknown"),
-                        "Snippet": hash_to_text.get(ph, "Unknown")
-                    })
-                    
-        df_vig = pd.DataFrame(vignette_data)
-        
-        # Sort vignettes by total/average prediction range across all models
-        vig_sums = df_vig.groupby("Prompt Hash")["Prediction Range"].mean().sort_values(ascending=True)
-        sorted_hashes = vig_sums.index.tolist()
-        
-        # To make the x-axis less cluttered, we might just map them to an index 1..70
-        hash_to_idx = {h: i for i, h in enumerate(sorted_hashes)}
-        df_vig["Vignette Rank"] = df_vig["Prompt Hash"].map(hash_to_idx)
-        
-        plt.figure(figsize=(16, 8))
-        
-        # Strip plot
-        sns.stripplot(
-            x="Vignette Rank", 
-            y="Prediction Range", 
-            hue="Category", 
-            data=df_vig, 
-            jitter=0.2, 
-            alpha=0.6, 
-            size=5
-        )
-        
-        plt.title("Per-Vignette Disagreement (Max-Min ESI shift across variants)\nPoints are individual models. Sorted by mean vulnerability.", pad=15)
-        plt.xlabel("Vignette (Sorted by aggregate sensitivity)")
-        plt.ylabel("Prediction Range (ESI units)")
-        
-        # Only show a few x-ticks to avoid clutter, but show the grid
-        plt.xticks([])
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
-        
-        # Move legend outside
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title="Clinical Category")
-        plt.tight_layout()
-        
-        out_path_strip = os.path.join(output_dir, "per_vignette_disagreement_strip.png")
-        plt.savefig(out_path_strip, dpi=300, bbox_inches='tight')
-        plt.close()
-    except Exception as e:
-        print(f"Error generating Strip plot: {e}")
-
-    # 10. Pairwise Condition Confusion Matrices (Small multiples)
+    # 8. Pairwise Condition Confusion Matrices (Small multiples)
     try:
         # We need the raw predictions to build arbitrary pairwise confusion matrices.
         # Let's aggregate them across all models.
@@ -741,7 +601,7 @@ def generate_cross_model_visuals(all_results: List[Dict[str, Any]], output_dir: 
     except Exception as e:
         print(f"Error generating Confusion Matrices: {e}")
 
-    # 11. Model Family × Condition Interaction Plot
+    # 9. Model Family × Condition Interaction Plot
     interaction_data = []
     
     for res in all_results:
@@ -788,7 +648,7 @@ def generate_cross_model_visuals(all_results: List[Dict[str, Any]], output_dir: 
     plt.savefig(out_path_int, dpi=300, bbox_inches='tight')
     plt.close()
 
-    # 12. Mean ESI Deviation Diverging Bar Chart
+    # 10. Mean ESI Deviation Diverging Bar Chart
     dev_data = []
     
     for model_name in sorted_models:
@@ -832,86 +692,7 @@ def generate_cross_model_visuals(all_results: List[Dict[str, Any]], output_dir: 
         plt.savefig(out_path_dev, dpi=300, bbox_inches='tight')
         plt.close()
 
-    # 13. Statistical Significance Volcano Plot
-    import math
-    
-    volcano_data = []
-    
-    for res in all_results:
-        model_name = res["model"]
-        stats = res.get("statistical_significance", {})
-        
-        # We'll use Friedman's test p-value (since ESI is ordinal)
-        p_val = stats.get("friedman_p")
-        p_val_fdr = stats.get("friedman_fdr_p")
-        
-        # We need an effect size. Let's use the Perturbation Sensitivity Score (PSS)
-        pss = res.get("sensitivity", {}).get("perturbation_sensitivity_score", 0.0)
-        
-        if p_val is not None and not math.isnan(p_val):
-            # Avoid log(0) if p-value is extremely small
-            p_val = max(p_val, 1e-15) 
-            neg_log_p = -math.log10(p_val)
-            
-            volcano_data.append({
-                "Model": model_name,
-                "Family": get_model_family(model_name),
-                "PSS (Effect Size)": pss,
-                "-log10(p)": neg_log_p,
-                "p_val": p_val,
-                "p_val_fdr": p_val_fdr
-            })
-            
-    if volcano_data:
-        df_volc = pd.DataFrame(volcano_data)
-        
-        plt.figure(figsize=(10, 8))
-        
-        # Use scatterplot to color by family
-        ax = sns.scatterplot(
-            data=df_volc, 
-            x="PSS (Effect Size)", 
-            y="-log10(p)", 
-            hue="Family", 
-            s=100,
-            palette="Set1",
-            edgecolor="black"
-        )
-        
-        # Add significance thresholds
-        alpha = 0.05
-        # Unadjusted threshold
-        plt.axhline(-math.log10(alpha), color='red', linestyle='--', alpha=0.7, label=f'Unadjusted p=0.05')
-        
-        # We also want to show where FDR correction lands if it's available and makes sense.
-        # For a simple representation, if any FDR p-value is < 0.05, we can show that limit.
-        # Alternatively, we just mention it or plot the strict Bonferroni limit as a visual proxy.
-        bonferroni_p = alpha / len(df_volc)
-        plt.axhline(-math.log10(bonferroni_p), color='darkred', linestyle=':', alpha=0.7, label=f'Bonferroni p={bonferroni_p:.4f}')
-        
-        # Annotate models that are highly significant or have huge effect sizes
-        for _, row in df_volc.iterrows():
-            if row["p_val"] < 0.05 or row["PSS (Effect Size)"] > 0.15:
-                # Add text label slightly offset
-                ax.text(
-                    row["PSS (Effect Size)"] + 0.005, 
-                    row["-log10(p)"], 
-                    row["Model"].split("_")[-1],  # Just show the short name
-                    fontsize=9
-                )
-
-        plt.title("Statistical Significance vs. Effect Size (Volcano Plot)\n(Friedman Test for Ordinal ESI Shifts)", pad=15)
-        plt.xlabel("Perturbation Sensitivity Score (Effect Size)")
-        plt.ylabel("-log10(p-value)")
-        plt.grid(True, linestyle='--', alpha=0.3)
-        plt.legend(title="Legend", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.tight_layout()
-        
-        out_path_volc = os.path.join(output_dir, "statistical_significance_volcano.png")
-        plt.savefig(out_path_volc, dpi=300, bbox_inches='tight')
-        plt.close()
-
-    # 14. Counterfactual Vignette Example Panels (5 Cases)
+    # 11. Counterfactual Vignette Example Panels (15 Cases)
     try:
         raw_df = pd.read_csv("eval/merged_evaluations.csv")
         import matplotlib.patches as patches
