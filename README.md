@@ -1,11 +1,3 @@
-We adapt perturbation sensitivity analysis to clinical demographic auditing, operationalizing a Perturbation Sensitivity Score (PSS) for sex-label token substitution in ESI triage and pairing it with a four-layer decomposition framework to isolate the mechanism of demographic attention leak.
-
-The PSS is computed as:
-
-`PSS = (mean_disagreement + mean_variance + mean_range / 4) / 3`
-
-where `mean_range / 4` normalizes the prediction range because ESI values span 1 to 5, giving a maximum possible range of 4.
-
 # ESI Triage Gender Bias & Attention Analysis
 
 ## Table of Contents
@@ -165,7 +157,8 @@ Quantifies how much information about the patient's sex can be recovered from th
 
 #### Analysis 5. Perturbation Sensitivity Scoring
 
-Produces a single composite score per model capturing total sensitivity to sex perturbation, combining: mean pairwise disagreement rate across all 6 variant pairs, mean per-case prediction variance across variants, mean per-case prediction range. Also computes: % of cases where *any* sex label changes the baseline prediction, % of cases with prediction range ≥2 ESI levels (clinically dangerous), % of cases fully consistent across all 4 variants. This score is the primary metric for **ranking models by sex-invariance**.
+We adapt perturbation sensitivity analysis to clinical demographic auditing, operationalizing a Perturbation Sensitivity Score (PSS) for sex-label token substitution in ESI triage.
+The PSS is a single composite score per model capturing total sensitivity to sex perturbation, combining: mean pairwise disagreement rate across all 6 variant pairs, mean per-case prediction variance across variants, mean per-case prediction range. Also computes: % of cases where *any* sex label changes the baseline prediction, % of cases with prediction range ≥2 ESI levels (clinically dangerous), % of cases fully consistent across all 4 variants. This score is the primary metric for **ranking models by sex-invariance**.
 
 #### Analysis 6 — Vulnerability Profiling by ESI Level and Clinical Category
 
