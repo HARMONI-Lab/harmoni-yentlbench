@@ -11,6 +11,7 @@ where `mean_range / 4` normalizes the prediction range because ESI values span 1
 ## Table of Contents
 - [Overview](#overview)
 - [How It Works](#how-it-works)
+- [Dataset Preparation](#dataset-preparation)
 - [Pipeline Architecture](#pipeline-architecture)
   - [Stage 1: `merge_runs.py` — Run Ingestion and Alignment](#stage-1-merge_runspy--run-ingestion-and-alignment)
   - [Stage 2: `benchmark_stats.py` — Per-Run Performance Metrics](#stage-2-benchmark_statspy--per-run-performance-metrics)
@@ -23,6 +24,7 @@ where `mean_range / 4` normalizes the prediction range because ESI values span 1
   - [Supported Demographic Variants](#supported-demographic-variants)
   - [JSON Structure](#json-structure)
 - [Usage](#usage)
+  - [Step 0: Prepare Dataset](#step-0-prepare-dataset)
   - [Step 1: Merge Runs](#step-1-merge-runs)
   - [Step 2: Compute Benchmark Statistics (Optional)](#step-2-compute-benchmark-statistics-optional)
   - [Step 3: Run the Analysis Pipeline](#step-3-run-the-analysis-pipeline)
@@ -54,6 +56,21 @@ This design enables three layers of causal inference that are impossible with ob
 2. **Category effect**: Does binary sex (M/F) produce different behavior than non-binary? (`mean(female, male)` → `nb_label_only`)
 3. **Value effect**: Does the specific binary gender matter? (`female` → `male`)
 4. **Non-binary token effect**: Does "non-binary" trigger learned associations, or does the model treat it as equivalent to no sex info? (`nb_label_only` → `nb_ambiguous`)
+
+## Dataset Preparation
+
+The `dataset_prep.py` script prepares the MIMIC-IV-ED demo data for gender bias benchmarking. The preparation is split into two parts:
+
+1. **Filtering & Curating (`dataset_males.csv`)**: 
+   - Joins `edstays` and `triage` tables to capture the exact information available at intake.
+   - Filters down exclusively to male patients to establish a clean ground truth free of historical female under-triage bias.
+   - Actively excludes cases where sex is a *legitimate* clinical variable (e.g., abdominal pain, foot infections, hyperglycemia). This ensures that any differential scoring detected in the benchmark is cleanly attributable to bias, not appropriate clinical reasoning.
+   - Scope: Chest pain, extremity injuries, respiratory complaints, altered mental status, and trauma.
+
+2. **Gender Quintet Expansion (`dataset_quintets.csv`)**:
+   - Takes the curated male stays and synthetically expands each record into 5 distinct gender variants (the quintet).
+   - Variables like name, pronoun, and sex label are manipulated to isolate the effect of gender tokens, while all clinical data remains identical.
+   - Produces a final output (`dataset_quintets.csv`) ready for LLM batch evaluation.
 
 ## Pipeline Architecture
 
@@ -322,6 +339,15 @@ Each `.run.json` file must contain a `subruns` array, where each item has the fo
 ```
 
 ## Usage
+
+### Step 0: Prepare Dataset
+
+Run the dataset preparation script to process the raw MIMIC-IV-ED demo tables into the expanded quintets used for LLM evaluation.
+
+```bash
+python dataset_prep.py
+```
+This generates `dataset_output/dataset_males.csv` and `dataset_output/dataset_quintets.csv`.
 
 ### Step 1: Merge Runs
 
