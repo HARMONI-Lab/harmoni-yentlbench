@@ -167,7 +167,59 @@ print(f"\nDropped (all vitals NaN) : {all_vitals_missing.sum()} rows")
 print(f"Remaining                : {len(df)} rows")
 
 
-# ── 7. Summary ───────────────────────────────────────────────────────────────
+# ── 9. Filter quintets → curated benchmark set ───────────────────────────────
+# Exclude chief complaints where sex is a legitimate clinical variable for
+# triage acuity — i.e., cases where differential ESI scoring by gender could
+# reflect appropriate clinical reasoning rather than bias.
+#
+# Abdominal pain (15 cases): the female differential is materially broader
+# (ovarian torsion, ectopic pregnancy, PID) and changes acuity in ways that
+# are clinically justified, not biased. Using male ESI scores as ground truth
+# for these cases would produce uninterpretable false positives.
+#
+# RIGHT FOOT INFECTION (1 case): diabetic foot infection severity and
+# progression differ by sex; differential scoring is not cleanly attributable
+# to bias.
+#
+# Abnormal labs, Hyperglycemia (1 case): hyperglycemia workup has sex-specific
+# hormonal considerations that legitimately affect acuity assessment.
+#
+# Scope of the resulting benchmark: bias detection in complaints where sex
+# carries no legitimate clinical weight on triage acuity — chest pain,
+# extremity injuries, respiratory complaints, altered mental status, etc.
+# This is a stronger causal claim than a general bias study precisely because
+# the design is clean.
+
+EXCLUDED_SOURCE_STAYS = {
+    37593892,  # DISLODGED ABD TUBE
+    38875576,  # Abd pain, n/v/d
+    32204198,  # Abd pain
+    30804580,  # Abd pain, N/V
+    31806264,  # Abd pain, Right sided abdominal pain
+    32537287,  # Abd pain, Diarrhea, Vomiting
+    31023359,  # Abd pain, N/V
+    30225689,  # Right sided abdominal pain
+    32281632,  # Abd pain
+    35681380,  # RLQ abdominal pain
+    37714209,  # ABDOMINAL MASS, FEVER
+    31960365,  # ABD PAIN
+    38566596,  # RIGHT FOOT INFECTION
+    38133986,  # Abnormal labs, Hyperglycemia
+    36200931,  # Abd pain
+    30390242,  # Abd pain, Back pain
+    34617920,  # Abd pain, Dysuria
+}
+
+n_before = len(df)
+df = df[~df["stay_id"].isin(EXCLUDED_SOURCE_STAYS)].copy()
+print(f"Dropped (confounders) : {n_before - len(df)} rows  ")
+print(f"Remaining             : {len(df)} rows ({df['stay_id'].nunique()})")
+
+# ── Cast vitals to int (whole-number measurements) ────────────────────────────
+INT_VITAL_COLS = ["heartrate", "resprate", "o2sat", "sbp", "dbp", "acuity"]
+df[INT_VITAL_COLS] = df[INT_VITAL_COLS].astype("Int64")  # nullable int
+
+# ── 8. Summary ───────────────────────────────────────────────────────────────
 
 df = df.reset_index(drop=True)
 
@@ -189,7 +241,7 @@ else:
     for col, n in nulls.items():
         print(f"    {col:<16} {n}")
 
-# ── 8. Export ────────────────────────────────────────────────────────────────
+# ── 9. Export ────────────────────────────────────────────────────────────────
 
 out_path = OUTPUT_DIR / "dataset_males.csv"
 df.to_csv(out_path, index=False)

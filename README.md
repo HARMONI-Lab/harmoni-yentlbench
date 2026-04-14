@@ -8,6 +8,27 @@ where `mean_range / 4` normalizes the prediction range because ESI values span 1
 
 # ESI Triage Gender Bias & Attention Analysis
 
+## Table of Contents
+- [Overview](#overview)
+- [How It Works](#how-it-works)
+- [Pipeline Architecture](#pipeline-architecture)
+  - [Stage 1: `merge_runs.py` — Run Ingestion and Alignment](#stage-1-merge_runspy--run-ingestion-and-alignment)
+  - [Stage 2: `benchmark_stats.py` — Per-Run Performance Metrics](#stage-2-benchmark_statspy--per-run-performance-metrics)
+  - [Stage 3: `attention_pipeline/` — Deep Attention Analysis (11 Analyses)](#stage-3-attention_pipeline--deep-attention-analysis-11-analyses)
+- [Output Structure](#output-structure)
+- [Clinical Significance](#clinical-significance)
+- [Installation](#installation)
+- [Expected Data Format](#expected-data-format)
+  - [File Naming Convention](#file-naming-convention)
+  - [Supported Demographic Variants](#supported-demographic-variants)
+  - [JSON Structure](#json-structure)
+- [Usage](#usage)
+  - [Step 1: Merge Runs](#step-1-merge-runs)
+  - [Step 2: Compute Benchmark Statistics (Optional)](#step-2-compute-benchmark-statistics-optional)
+  - [Step 3: Run the Analysis Pipeline](#step-3-run-the-analysis-pipeline)
+- [Interpreting the Output](#interpreting-the-output)
+- [Project Structure](#project-structure)
+
 ## Overview
 
 This repository provides a rigorous, multi-stage analysis pipeline for quantifying how large language models (LLMs) attend to patient sex/gender information when performing Emergency Severity Index (ESI) triage scoring, a 5-level acuity classification system (ESI 1 = immediate resuscitation through ESI 5 = non-urgent) used universally in emergency departments to prioritize patient care.
@@ -174,12 +195,26 @@ results/
 │
 └── attention/                              # Stage 3: Deep attention analysis
     ├── cross_model_attention_summary.csv   #   Model ranking table
+    ├── cross_model_attention_report.txt    #   Formatted text report summarizing cross-model attention ranking
     ├── all_models_pairwise.csv             #   Combined pairwise across models
     ├── all_models_dangerous_transitions.csv#   All flagged transitions
     ├── pss_ranking_bar_chart.png           #   Visual ranking of models by sensitivity
     ├── esi_2_to_3_undertriage_stacked_bar.png # Visual of undertriage events
+    ├── four_layer_decomposition_heatmap.png #  Four-Layer effect decomposition by model
+    ├── accuracy_by_condition_grouped_bar.png # Exact match accuracy by sex-label condition
+    ├── male_anchor_effect_dumbbell.png     #   Accuracy delta: the male anchor effect
+    ├── esi_score_distribution_grouped_bar.png # Score distribution across models by condition
+    ├── transition_sankey_diagram.png       #   Aggregated ESI score transitions
+    ├── clinical_category_vulnerability_heatmap.png # Clinical category vulnerability by model
+    ├── per_vignette_disagreement_strip.png #   Per-vignette disagreement (ESI shift)
+    ├── pairwise_confusion_matrices.png     #   Pairwise condition confusion matrices
+    ├── family_condition_interaction_plot.png # Model family × condition interaction
+    ├── mean_esi_deviation_diverging_bar.png #  Mean signed ESI deviation by condition vs. baseline
+    ├── statistical_significance_volcano.png #  Statistical significance vs. effect size
+    ├── counterfactual_vignette_panel_case_*.png # Counterfactual vignette examples (15 cases)
     │
     ├── openai_gpt-5.4-2026-03-05/         #   Per-model directory
+    │   ├── attention_report.txt            #     Formatted text report with detailed attention metrics
     │   ├── model_attention_summary.csv     #     Flat summary of all metrics
     │   ├── transition_female.csv           #     5×5 baseline→female matrix
     │   ├── transition_male.csv             #     5×5 baseline→male matrix
@@ -338,6 +373,7 @@ When the pipeline finishes, it will print a **Cross-Model Attention Ranking** to
 Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per model, including dangerous triage transitions and category-specific vulnerability matrices.
 
 ## Project Structure
+- `dataset_prep.py`: Prepares MIMIC-IV-ED demo data, handles the gender quintet expansion, and filters out complaints where sex is a legitimate clinical variable (e.g., abdominal pain).
 - `merge_runs.py`: Parses and joins JSON output files.
 - `benchmark_stats.py`: Computes per-run benchmark statistics.
 - `attention_pipeline/pipeline.py`: Main orchestrator for the analysis suite.

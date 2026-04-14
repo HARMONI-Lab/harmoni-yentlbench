@@ -4,12 +4,15 @@ This module will contain functions for generating plots, heatmaps, etc.
 """
 
 from typing import Dict, Any, List
+import logging
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
 import math
+
+logging.getLogger("matplotlib.category").setLevel(logging.WARNING)
 
 def get_model_family(model_name: str) -> str:
     """Helper to categorize model names into families."""

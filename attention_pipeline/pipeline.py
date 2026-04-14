@@ -179,7 +179,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         logger.info("  %s: %s", model, sorted(variants.keys()))
         if BASELINE_VARIANT not in variants:
             logger.warning(
-                "  ⚠️  Model '%s' missing baseline variant '%s'",
+                "  (!!!)  Model '%s' missing baseline variant '%s'",
                 model,
                 BASELINE_VARIANT,
             )
@@ -203,14 +203,21 @@ def main(argv: Optional[List[str]] = None) -> None:
 
         all_results.append(result)
 
-        # Print per-model report to console
-        print_model_report(result)
-
-        # Save per-model outputs to disk
+        # Determine per-model output directory
         model_dir = os.path.join(
             args.output_dir,
             model.replace("/", "_").replace("\\", "_"),
         )
+        os.makedirs(model_dir, exist_ok=True)
+
+        # Print per-model report to console and save to file
+        report_path = os.path.join(model_dir, "attention_report.txt")
+        with open(report_path, "w", encoding="utf-8") as report_file:
+            print_model_report(result, file=report_file)
+        print_model_report(result)
+        logger.info("  Saved per-model report to '%s'", report_path)
+
+        # Save per-model outputs to disk
         save_model_results(result, model_dir)
         generate_visuals(result, model_dir)
 
@@ -219,7 +226,13 @@ def main(argv: Optional[List[str]] = None) -> None:
         logger.error("No models produced results. Exiting.")
         sys.exit(1)
 
+    # Print cross-model summary to console and save to file
+    cross_model_report_path = os.path.join(args.output_dir, "cross_model_attention_report.txt")
+    with open(cross_model_report_path, "w", encoding="utf-8") as report_file:
+        print_cross_model_summary(all_results, file=report_file)
     print_cross_model_summary(all_results)
+    logger.info("Saved cross-model report to '%s'", cross_model_report_path)
+
     save_cross_model_results(all_results, args.output_dir)
     generate_cross_model_visuals(all_results, args.output_dir)
 
