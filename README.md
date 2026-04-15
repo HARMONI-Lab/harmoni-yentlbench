@@ -5,9 +5,9 @@
 - [How It Works](#how-it-works)
 - [Dataset Preparation](#dataset-preparation)
 - [Pipeline Architecture](#pipeline-architecture)
-  - [Stage 1: `merge_runs.py` — Run Ingestion and Alignment](#stage-1-merge_runspy--run-ingestion-and-alignment)
-  - [Stage 2: `benchmark_stats.py` — Per-Run Performance Metrics](#stage-2-benchmark_statspy--per-run-performance-metrics)
-  - [Stage 3: `attention_pipeline/` — Deep Attention Analysis (11 Analyses)](#stage-3-attention_pipeline--deep-attention-analysis-11-analyses)
+  - [Stage 1: `merge_runs.py` Run Ingestion and Alignment](#stage-1-merge_runspy--run-ingestion-and-alignment)
+  - [Stage 2: `benchmark_stats.py` Per-Run Performance Metrics](#stage-2-benchmark_statspy--per-run-performance-metrics)
+  - [Stage 3: `attention_pipeline/` Deep Attention Analysis (11 Analyses)](#stage-3-attention_pipeline--deep-attention-analysis-11-analyses)
 - [Output Structure](#output-structure)
 - [Clinical Significance](#clinical-significance)
 - [Installation](#installation)
@@ -121,7 +121,7 @@ Computes comprehensive classification and ordinal metrics for every run (model �
 - **Classification**: accuracy, balanced accuracy, precision / recall / F1 (macro, weighted, micro, and per-ESI-level), Cohen's κ (linear and quadratic, the quadratic variant penalizes distant misclassifications, e.g., ESI 1 predicted as ESI 5, more heavily than near-misses), Matthews Correlation Coefficient
 - **Ordinal**: mean absolute error, RMSE, median absolute error, accuracy within 1 ESI level (a standard ESI benchmark metric), over-triage rate (model assigns lower/more-urgent ESI than ground truth), under-triage rate, mean signed error (directional bias), Spearman ρ, Kendall τ
 - **Clinical safety**: ESI-1 sensitivity (do we catch every resuscitation-level patient?), high-acuity accuracy (ESI 1-2), severe under-triage rate (ESI 1-2 patients classified as ESI 3+), critical under-triage rate (ESI 1-2 classified as ESI 4-5)
-- **Confidence intervals**: Bootstrap 95% CIs (1000 samples) for accuracy, balanced accuracy, Cohen's κ, F1 macro, and MAE — essential for determining whether differences between runs are statistically meaningful or within sampling noise
+- **Confidence intervals**: Bootstrap 95% CIs (1000 samples) for accuracy, balanced accuracy, Cohen's κ, F1 macro, and MAE that are essential for determining whether differences between runs are statistically meaningful or within sampling noise
 
 **Outputs**: `eval/benchmark_stats.csv` (compact), `eval/benchmark_stats_full.csv` (includes 5×5 confusion matrix cells)
 

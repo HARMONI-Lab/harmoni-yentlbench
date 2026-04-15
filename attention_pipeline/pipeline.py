@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ESI Triage Gender Attention Analysis — Pipeline Orchestrator
+YentlBench ESI Triage Gender Attention Analysis Pipeline Orchestrator
 
 Runs all 11 analyses for each model discovered in the merged evaluations CSV,
 prints per-model and cross-model reports, and saves all outputs.
@@ -193,7 +193,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         variant_cols = groups[model]
 
         if len(variant_cols) < 2:
-            logger.warning("Model '%s' has < 2 variants — skipping", model)
+            logger.warning("Model '%s' has < 2 variants ... skipping", model)
             continue
 
         # Run all analyses

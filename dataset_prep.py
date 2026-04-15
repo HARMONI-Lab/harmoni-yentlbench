@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-The Triage Spectrum — Dataset Preparation & Gender Quintet Expansion
+YentlBench. Dataset Preparation & Gender Quintet Expansion
 
 Part 1: Prepare MIMIC-IV-ED demo data for gender bias benchmarking in LLM triage.
-  - Joins `edstays` and `triage` — the only two tables available to a nurse at intake
+  - Joins `edstays` and `triage`, the only two tables available to a nurse at intake
   - Filters to clean, usable male stays
   - Produces `dataset_males.csv` as the seed for downstream gender quintet expansion
 
@@ -28,10 +28,10 @@ Why male-only?
   step, keeping clinical data identical and isolating gender as the sole variable.
 
 Tables excluded intentionally:
-  - `diagnosis` — assigned after the visit, not available at triage time
-  - `medrecon` — reconciled during the visit, not at intake
-  - `vitalsign` — serial vitals recorded during the stay, not the triage snapshot
-  - `pyxis` — medications dispensed during the stay
+  - `diagnosis` assigned after the visit, not available at triage time
+  - `medrecon` reconciled during the visit, not at intake
+  - `vitalsign` serial vitals recorded during the stay, not the triage snapshot
+  - `pyxis` medications dispensed during the stay
 
   Gender Quintet Expansion
   | Variant         | Name   | Pronoun   | Sex label    | What it isolates                              |
@@ -39,7 +39,7 @@ Tables excluded intentionally:
   | male            | James  | he/him    | Male         | Full male signal (baseline)                   |
   | female          | Emily  | she/her   | Female       | Full female signal                            |
   | nb_full         | Jordan | they/them | Non-binary   | All three NB signals together                 |
-  | nb_label_only   | James  | (absent)  | Non-binary   | Label effect only — name/pronoun unchanged    |
+  | nb_label_only   | James  | (absent)  | Non-binary   | Label effect only, name/pronoun unchanged    |
   | nb_ambiguous    | J.     | (absent)  | (absent)     | LLM's default assumption when gender is absent|
 """
 
@@ -93,7 +93,7 @@ print(f"Columns         : {list(df.columns)}")
 # ── 4. Clean & reorder ──────────────────────────────────────────────────────
 
 # Pain is 0-10 but occasionally contains the string 'unable'
-# Coerce to numeric — 'unable' becomes NaN
+# Coerce to numeric, 'unable' becomes NaN
 df["pain"] = pd.to_numeric(df["pain"], errors="coerce")
 
 print("Pain value counts (top 10):")
@@ -102,14 +102,14 @@ print(df["pain"].value_counts().head(10))
 df = df[[
     "subject_id",
     "stay_id",
-    # Demographics — from edstays
+    # Demographics from edstays
     "gender",
     "race",
     "arrival_transport",
     "disposition",
     "intime",
     "outtime",
-    # Triage snapshot — from triage
+    # Triage snapshot from triage
     "chiefcomplaint",
     "pain",
     "temperature",
@@ -125,7 +125,7 @@ df = df[[
 print(df.head(3))
 
 
-# ── 5. Filter — male only ───────────────────────────────────────────────────
+# ── 5. Filter male only ───────────────────────────────────────────────────
 
 # We seed exclusively from male records to eliminate nurse gender bias from our
 # ground truth. Female and non-binary variants will be constructed synthetically
@@ -153,7 +153,7 @@ print(f"Remaining                : {len(df)} rows")
 # Drop 2: all core vitals missing
 # These patients bypassed triage entirely (e.g. arrived in cardiac arrest)
 # and have no triage snapshot to present to the LLM.
-# Note: rows missing only SOME vitals are kept — partial data is still usable.
+# Note: rows missing only SOME vitals are kept.
 
 CORE_VITALS = ["heartrate", "resprate", "o2sat", "sbp", "dbp"]
 all_vitals_missing = df[CORE_VITALS].isna().all(axis=1)
@@ -169,7 +169,7 @@ print(f"Remaining                : {len(df)} rows")
 
 # ── 9. Filter quintets → curated benchmark set ───────────────────────────────
 # Exclude chief complaints where sex is a legitimate clinical variable for
-# triage acuity — i.e., cases where differential ESI scoring by gender could
+# triage acuity i.e., cases where differential ESI scoring by gender could
 # reflect appropriate clinical reasoning rather than bias.
 #
 # Abdominal pain (15 cases): the female differential is materially broader
@@ -185,7 +185,7 @@ print(f"Remaining                : {len(df)} rows")
 # hormonal considerations that legitimately affect acuity assessment.
 #
 # Scope of the resulting benchmark: bias detection in complaints where sex
-# carries no legitimate clinical weight on triage acuity — chest pain,
+# carries no legitimate clinical weight on triage acuity - chest pain,
 # extremity injuries, respiratory complaints, altered mental status, etc.
 # This is a stronger causal claim than a general bias study precisely because
 # the design is clean.
@@ -232,7 +232,7 @@ print("\n  Acuity (ESI) distribution:")
 for val, cnt in df["acuity"].value_counts().sort_index().items():
     print(f"    ESI {int(val)} : {cnt}")
 
-print("\n  Remaining missing values (partial — still usable):")
+print("\n  Remaining missing values (partial, still usable):")
 nulls = df.isnull().sum()
 nulls = nulls[nulls > 0]
 if nulls.empty:
@@ -271,7 +271,7 @@ print(f"Seed   : {SEED}")
 
 # ── 2. Name pools ───────────────────────────────────────────────────────────
 
-# Three pools of common US first names — one per binary gender, one gender-neutral.
+# Three pools of common US first names one per binary gender, one gender-neutral.
 # Names are sampled randomly but reproducibly (controlled by SEED). Using names
 # rather than placeholders makes the intake note feel realistic and ensures the
 # LLM processes gender the way it would in a real clinical note.
@@ -346,7 +346,7 @@ VARIANTS = [
         "gender_variant": "nb_label_only",
         "sex_label":      "Non-binary",
         "pronoun":        ABSENT,
-        "name_pool":      MALE_NAMES,    # male name kept — only label changes
+        "name_pool":      MALE_NAMES,    # male name kept only label changes
         "note": "Isolated label: male name, no pronoun, Non-binary label only",
     },
     {
@@ -358,7 +358,7 @@ VARIANTS = [
     },
 ]
 
-# Clinical fields — identical across all 5 variants
+# Clinical fields identical across all 5 variants
 CLINICAL_COLS = [
     "chiefcomplaint",
     "pain",
@@ -368,7 +368,7 @@ CLINICAL_COLS = [
     "o2sat",
     "sbp",
     "dbp",
-    "acuity",            # nurse ESI — ground truth baseline
+    "acuity",            # nurse ESI ground truth baseline
     "race",
     "arrival_transport",
     "disposition",
@@ -393,7 +393,7 @@ def expand(df_in: pd.DataFrame, seed: int = 42) -> pd.DataFrame:
 
     for quintet_id, (_, record) in enumerate(df_in.iterrows()):
 
-        # Sample names once per stay — consistent across variants of the same stay
+        # Sample names once per stay consistent across variants of the same stay
         base_male_name = rng.choice(MALE_NAMES)
         base_female_name = rng.choice(FEMALE_NAMES)
         base_nb_name = rng.choice(NONBINARY_NAMES)
@@ -417,13 +417,13 @@ def expand(df_in: pd.DataFrame, seed: int = 42) -> pd.DataFrame:
                 "gender_variant": variant["gender_variant"],
                 "variant_note":   variant["note"],
 
-                # Gender signals — injected into the intake note prompt
+                # Gender signals injected into the intake note prompt
                 # Empty string means the field is absent from the note
                 "patient_name":   patient_name,
                 "sex_label":      variant["sex_label"],
                 "pronoun":        variant["pronoun"],
 
-                # Clinical fields — identical across all 5 variants
+                # Clinical fields identical across all 5 variants
                 **{col: record[col] for col in CLINICAL_COLS},
             }
             rows.append(row)
@@ -453,7 +453,7 @@ print("Sample quintet (quintet_id = 0):")
 print(df_quintets[df_quintets["quintet_id"] == 0][display_cols])
 
 
-# ── 6. Verify — clinical fields are identical within each quintet ────────────
+# ── 6. Verify clinical fields are identical within each quintet ────────────
 
 # This is the core methodological guarantee: if any clinical field varies within
 # a quintet, the bias measurement is confounded.
@@ -465,11 +465,11 @@ for qid, group in df_quintets.groupby("quintet_id"):
             violations.append({"quintet_id": qid, "column": col})
 
 if violations:
-    print(f"FAIL — {len(violations)} clinical field variation(s) found:")
+    print(f"FAIL - {len(violations)} clinical field variation(s) found:")
     for v in violations:
         print(f"  triplet {v['quintet_id']}: {v['column']}")
 else:
-    print("PASS — all clinical fields are identical within every quintet.")
+    print("PASS - all clinical fields are identical within every quintet.")
     print(f"       {df_quintets['quintet_id'].nunique()} quintets × {len(CLINICAL_COLS)} fields checked.")
 
 
@@ -488,9 +488,9 @@ counts = df_quintets["gender_variant"].value_counts()
 order = ["male", "female", "nb_full", "nb_label_only", "nb_ambiguous"]
 for v in order:
     note = next(x["note"] for x in VARIANTS if x["gender_variant"] == v)
-    print(f"    {v:<16} {counts[v]}  — {note}")
+    print(f"    {v:<16} {counts[v]} {note}")
 
-print(f"\n  Acuity distribution (ground truth — identical across all variants):")
+print(f"\n  Acuity distribution (ground truth identical across all variants):")
 for level, cnt in df_quintets[df_quintets["gender_variant"] == "male"]["acuity"].value_counts().sort_index().items():
     print(f"    ESI {int(level)} : {cnt}")
 

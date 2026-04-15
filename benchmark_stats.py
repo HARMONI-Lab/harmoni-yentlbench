@@ -34,6 +34,9 @@ from sklearn.metrics import (
     log_loss,
 )
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
@@ -135,7 +138,7 @@ def compute_classification_stats(
     # --- Cohen's Kappa (inter-rater agreement vs chance) ---
     stats["cohen_kappa"] = cohen_kappa_score(y_true, y_pred, labels=ESI_LEVELS)
 
-    # --- Weighted (quadratic) Kappa — penalizes distant misclassifications ---
+    # --- Weighted (quadratic) Kappa, penalizes distant misclassifications ---
     stats["cohen_kappa_quadratic"] = cohen_kappa_score(
         y_true, y_pred, labels=ESI_LEVELS, weights="quadratic"
     )
@@ -353,7 +356,7 @@ def compute_run_stats(
     y_pred = y_pred_full[valid_mask].astype(int).values
 
     if len(y_true) == 0:
-        logger.warning("Run '%s' has no valid predictions — skipping metrics.", run_label)
+        logger.warning("Run '%s' has no valid predictions, skipping metrics.", run_label)
         return stats
 
     # --- Classification ---

@@ -96,21 +96,21 @@ def print_model_report(result: Dict[str, Any], file: Optional[IO[str]] = None) -
         l1 = ed.get("L1_presence_abs_mean_effect")
         if l1 is not None:
             helpful = "YES ✓" if ed.get("L1_accuracy_delta", 0) > 0 else "NO ✗"
-            _emit(f"     Layer 1 — PRESENCE (any sex label vs none):", file)
+            _emit(f"     Layer 1 PRESENCE (any sex label vs none):", file)
             _emit(f"       Mean effect magnitude:   {l1:.4f}", file)
             _emit(f"       Accuracy Δ:              {ed.get('L1_accuracy_delta', 0):+.4f}", file)
             _emit(f"       Sex info helpful?        {helpful}", file)
 
         l2 = ed.get("L2_binary_vs_nb_abs_mean")
         if l2 is not None:
-            _emit(f"     Layer 2 — CATEGORY (binary M/F vs non-binary):", file)
+            _emit(f"     Layer 2 CATEGORY (binary M/F vs non-binary):", file)
             _emit(f"       Mean effect magnitude:   {l2:.4f}", file)
             _emit(f"       Accuracy Δ:              {ed.get('L2_accuracy_delta', 0):+.4f}", file)
 
         l3 = ed.get("L3_female_vs_male_abs_mean")
         if l3 is not None:
             sig = " (!!!)" if (ed.get("L3_wilcoxon_p") or 1) < 0.05 else ""
-            _emit(f"     Layer 3 — GENDER VALUE (female vs male):{sig}", file)
+            _emit(f"     Layer 3 GENDER VALUE (female vs male):{sig}", file)
             _emit(f"       Mean effect magnitude:   {l3:.4f}", file)
             _emit(f"       Predictions differ:      {ed.get('L3_female_vs_male_pct_differs', 0):.2%}", file)
             _emit(f"       Female less urgent:      {ed.get('L3_pct_female_less_urgent', 0):.2%}", file)
@@ -124,7 +124,7 @@ def print_model_report(result: Dict[str, Any], file: Optional[IO[str]] = None) -
                 if ed.get("L4_nb_token_pct_changed", 1.0) < 0.02
                 else "NO → has NB-specific behavior"
             )
-            _emit(f"     Layer 4 — NON-BINARY TOKEN (NB vs no sex info):", file)
+            _emit(f"     Layer 4 NON-BINARY TOKEN (NB vs no sex info):", file)
             _emit(f"       Mean effect magnitude:   {l4:.4f}", file)
             _emit(f"       Predictions changed:     {ed.get('L4_nb_token_pct_changed', 0):.2%}", file)
             _emit(f"       Model ignores NB token?  {ignores}", file)

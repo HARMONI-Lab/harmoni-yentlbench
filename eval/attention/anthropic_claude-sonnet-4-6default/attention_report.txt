@@ -33,20 +33,20 @@
        Sex info helped/hurt:    +3 / -3 (net: +0)
 
   🔬 Sex Information Effect Decomposition
-     Layer 1 — PRESENCE (any sex label vs none):
+     Layer 1 PRESENCE (any sex label vs none):
        Mean effect magnitude:   0.0857
        Accuracy Δ:              -0.0238
        Sex info helpful?        NO ✗
-     Layer 2 — CATEGORY (binary M/F vs non-binary):
+     Layer 2 CATEGORY (binary M/F vs non-binary):
        Mean effect magnitude:   0.0714
        Accuracy Δ:              -0.0357
-     Layer 3 — GENDER VALUE (female vs male):
+     Layer 3 GENDER VALUE (female vs male):
        Mean effect magnitude:   0.0571
        Predictions differ:      5.71%
        Female less urgent:      1.43%
        Female more urgent:      4.29%
        Accuracy Δ (F - M):      +0.0143
-     Layer 4 — NON-BINARY TOKEN (NB vs no sex info):
+     Layer 4 NON-BINARY TOKEN (NB vs no sex info):
        Mean effect magnitude:   0.0857
        Predictions changed:     8.57%
        Model ignores NB token?  NO → has NB-specific behavior
