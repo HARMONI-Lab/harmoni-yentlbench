@@ -187,7 +187,7 @@ def parse_run_results(
 
         if prompt_text is None:
             logger.warning(
-                "%s: subrun %d (pyRunId=%s) has no extractable prompt — skipping",
+                "%s: subrun %d (pyRunId=%s) has no extractable prompt - skipping",
                 file_path,
                 idx,
                 subrun.get("pyRunId"),
@@ -226,7 +226,7 @@ def parse_run_results(
     missing_prompts = df["prompt"].isna().sum()
     if missing_prompts > 0:
         logger.warning(
-            "%s: %d rows still missing prompts after parsing — dropping them",
+            "%s: %d rows still missing prompts after parsing, dropping them",
             file_path,
             missing_prompts,
         )
@@ -330,11 +330,11 @@ def print_summary(merged_df: pd.DataFrame) -> None:
         [c for c in merged_df.columns if c.startswith("predicted_score")]
     )
     if not pred_cols:
-        logger.info("No predicted_score columns found — skipping summary.")
+        logger.info("No predicted_score columns found ... skipping summary.")
         return
 
     if "actual_score" not in merged_df.columns:
-        logger.info("No actual_score column found — skipping summary.")
+        logger.info("No actual_score column found ... skipping summary.")
         return
 
     # Compute accuracy for each run by comparing predicted to actual

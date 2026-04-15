@@ -5,9 +5,9 @@
 - [How It Works](#how-it-works)
 - [Dataset Preparation](#dataset-preparation)
 - [Pipeline Architecture](#pipeline-architecture)
-  - [Stage 1: `merge_runs.py` — Run Ingestion and Alignment](#stage-1-merge_runspy--run-ingestion-and-alignment)
-  - [Stage 2: `benchmark_stats.py` — Per-Run Performance Metrics](#stage-2-benchmark_statspy--per-run-performance-metrics)
-  - [Stage 3: `attention_pipeline/` — Deep Attention Analysis (11 Analyses)](#stage-3-attention_pipeline--deep-attention-analysis-11-analyses)
+  - [Stage 1: `merge_runs.py` Run Ingestion and Alignment](#stage-1-merge_runspy--run-ingestion-and-alignment)
+  - [Stage 2: `benchmark_stats.py` Per-Run Performance Metrics](#stage-2-benchmark_statspy--per-run-performance-metrics)
+  - [Stage 3: `attention_pipeline/` Deep Attention Analysis (11 Analyses)](#stage-3-attention_pipeline--deep-attention-analysis-11-analyses)
 - [Output Structure](#output-structure)
 - [Clinical Significance](#clinical-significance)
 - [Installation](#installation)
@@ -31,7 +31,8 @@ This repository provides a rigorous, multi-stage analysis pipeline for quantifyi
 
 ESI triage decisions should be driven exclusively by clinical presentation such as chief complaint, vital signs, pain level, and mechanism of injury  and not by the patient's sex. Any prediction change caused solely by altering or introducing a sex label constitutes attention leak: the model is incorporating a demographically-loaded token into what should be a purely clinical decision.
 
-This pipeline systematically detects, quantifies, and characterizes that attention leak across multiple models simultaneously.
+This pipeline systematically detects, quantifies, and characterizes that attention leak across multiple models simultaneously.   
+Anchored in Dr. Bernadine Healy's Yentl Syndrome [2], which documented how women were historically undertreated by failing to mirror a male clinical prototype.
 
 ## How It Works
 
@@ -53,7 +54,7 @@ This design enables three layers of causal inference:
 
 ## Dataset Preparation
 
-The `dataset_prep.py` script prepares the MIMIC-IV-ED Demo data for gender bias benchmarking. The preparation is split into two parts:
+The `dataset_prep.py` script prepares the MIMIC-IV-ED Demo [3] data for gender bias benchmarking. The preparation is split into two parts:
 
 1. **Filtering & Curating (`dataset_males.csv`)**: 
    - Joins `edstays` and `triage` tables to capture the exact information available at intake.
@@ -121,7 +122,7 @@ Computes comprehensive classification and ordinal metrics for every run (model �
 - **Classification**: accuracy, balanced accuracy, precision / recall / F1 (macro, weighted, micro, and per-ESI-level), Cohen's κ (linear and quadratic, the quadratic variant penalizes distant misclassifications, e.g., ESI 1 predicted as ESI 5, more heavily than near-misses), Matthews Correlation Coefficient
 - **Ordinal**: mean absolute error, RMSE, median absolute error, accuracy within 1 ESI level (a standard ESI benchmark metric), over-triage rate (model assigns lower/more-urgent ESI than ground truth), under-triage rate, mean signed error (directional bias), Spearman ρ, Kendall τ
 - **Clinical safety**: ESI-1 sensitivity (do we catch every resuscitation-level patient?), high-acuity accuracy (ESI 1-2), severe under-triage rate (ESI 1-2 patients classified as ESI 3+), critical under-triage rate (ESI 1-2 classified as ESI 4-5)
-- **Confidence intervals**: Bootstrap 95% CIs (1000 samples) for accuracy, balanced accuracy, Cohen's κ, F1 macro, and MAE — essential for determining whether differences between runs are statistically meaningful or within sampling noise
+- **Confidence intervals**: Bootstrap 95% CIs (1000 samples) for accuracy, balanced accuracy, Cohen's κ, F1 macro, and MAE that are essential for determining whether differences between runs are statistically meaningful or within sampling noise
 
 **Outputs**: `eval/benchmark_stats.csv` (compact), `eval/benchmark_stats_full.csv` (includes 5×5 confusion matrix cells)
 
@@ -190,9 +191,9 @@ Computes agreement rate, mean signed difference, mean absolute difference, McNem
 #### Analysis 11. Omnibus Statistical Significance
 
 Computes omnibus statistical tests across all variants for each model to determine if there is a statistically significant effect across the group:
-- **Cochran's Q test**: Are accuracy rates (binary correctness) significantly different across all four variants? (A generalization of McNemar's test for >2 groups).
-- **Friedman test**: Do predicted ESI scores (ordinal) differ across variants? (A repeated-measures test on the same clinical cases).
-- **FDR Correction**: Benjamini-Hochberg false discovery rate correction applied to the p-values to control for multiple testing.
+- **Cochran's Q test**[4]: Are accuracy rates (binary correctness) significantly different across all four variants? (A generalization of McNemar's test for >2 groups).
+- **Friedman test**[5]: Do predicted ESI scores (ordinal) differ across variants? (A repeated-measures test on the same clinical cases).
+- **FDR Correction**[6]: Benjamini-Hochberg false discovery rate correction applied to the p-values to control for multiple testing.
 
 **Outputs**: Per-model directory with 8+ CSV files (transition matrices, dangerous transitions, vulnerability profiles, boundary crossings, consistency by difficulty, pairwise comparisons, case detail, model summary) plus cross-model summary tables and visualizations.
 
@@ -244,8 +245,6 @@ results/
 ```
 
 ## Clinical Significance
-
-Real-world emergency medicine literature documents persistent sex/gender disparities in triage and diagnosis, particularly for acute coronary syndromes: women presenting with chest pain are more likely to be under-triaged, experience longer wait times, and receive delayed intervention compared to men with identical presentations (Chang et al., 2019; Poon et al., 2022). If LLMs deployed for clinical decision support replicate or amplify these patterns, the consequences are directly patient-safety-relevant.
 
 This pipeline provides the quantitative framework to answer:
 
@@ -405,16 +404,14 @@ Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per 
 - `attention_pipeline/report.py` / `attention_pipeline/save.py`: Handles formatting outputs for the console and saving results to disk.
 - `attention_pipeline/util.py`: Shared data loading and helper functions.
 
-This work was created as part of the Kaggle competition "Measuring Progress Toward AGI - Cognitive Abilities". 
+This work was created as part of the Kaggle competition "Measuring Progress Toward AGI - Cognitive Abilities". [7] 
 
 ## References & citations
-[1] Gilboy N, et al. Emergency Severity Index, Version 4. AHRQ. 2011.
-Healy, B. The Yentl Syndrome. NEJM, 1991; 325(4):274–276.
-Johnson A, et al. MIMIC-IV-ED Demo (v2.2). PhysioNet. 2023. doi:10.13026/jzz5-vs76
-Colvin S, et al. Pydantic: Data validation using Python type hints. GitHub; 2017.
-Cochran WG. The comparison of percentages in matched samples. Biometrika. 1950;37:256–266.
-Friedman M. The use of ranks to avoid the assumption of normality. J Am Stat Assoc. 1937;32:675–701.
-Benjamini Y, Hochberg Y. Controlling the false discovery rate. J R Stat Soc Series B. 1995;57:289–300.
-Wei J, et al. Chain-of-thought prompting elicits reasoning in LLMs. NeurIPS. 2022;35:24824-37.
-Plomecka, B, et al. [Measuring Progress Toward AGI - Cognitive Abilities.](https://kaggle.com/competitions/kaggle-measuring-agi) Kaggle; 2026.
+1. Gilboy N, et al. Emergency Severity Index, Version 4. AHRQ. 2011.
+2. Healy, B. The Yentl Syndrome. NEJM, 1991; 325(4):274–276.
+3. Johnson A, et al. MIMIC-IV-ED Demo (v2.2). PhysioNet. 2023. doi:10.13026/jzz5-vs76
+4. Cochran WG. The comparison of percentages in matched samples. Biometrika. 1950;37:256–266.
+5. Friedman M. The use of ranks to avoid the assumption of normality. J Am Stat Assoc. 1937;32:675–701.
+6. Benjamini Y, Hochberg Y. Controlling the false discovery rate. J R Stat Soc Series B. 1995;57:289–300.
+7. Plomecka, B, et al. [Measuring Progress Toward AGI - Cognitive Abilities.](https://kaggle.com/competitions/kaggle-measuring-agi) Kaggle; 2026.
 

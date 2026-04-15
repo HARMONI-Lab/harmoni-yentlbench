@@ -2,7 +2,7 @@
 Variant semantics and global constants.
 
 Variant definitions:
-    - nb_ambiguous:   NO sex information — field completely omitted (TRUE BASELINE)
+    - nb_ambiguous:   NO sex information field completely omitted (TRUE BASELINE)
     - female:         Explicit sex label "female"
     - male:           Explicit sex label "male"
     - nb_label_only:  Explicit sex label "non-binary"
@@ -25,7 +25,7 @@ LABELED_VARIANTS = [VARIANT_FEMALE, VARIANT_MALE, VARIANT_NONBINARY]
 BINARY_VARIANTS = [VARIANT_FEMALE, VARIANT_MALE]
 
 VARIANT_DESCRIPTIONS = {
-    VARIANT_NO_SEX:    "No sex info (omitted) — BASELINE",
+    VARIANT_NO_SEX:    "No sex info (omitted) BASELINE",
     VARIANT_FEMALE:    "Sex: female",
     VARIANT_MALE:      "Sex: male",
     VARIANT_NONBINARY: "Sex: non-binary",
@@ -34,7 +34,7 @@ VARIANT_DESCRIPTIONS = {
 # ---------------------------------------------------------------------------
 # Clinical complaint categorization
 #
-# ORDER MATTERS — first match wins. Categories are ordered by clinical
+# ORDER MATTERS: first match wins. Categories are ordered by clinical
 # priority so that multi-complaint cases (e.g., "Chest pain, Nausea")
 # are classified by their most acute component.
 #
@@ -42,7 +42,7 @@ VARIANT_DESCRIPTIONS = {
 # ---------------------------------------------------------------------------
 COMPLAINT_CATEGORIES = {
 
-    # Chest pain & acute coronary — highest priority, key gender-bias area
+    # Chest pain & acute coronary - highest priority, key gender-bias area
     # Matches: Chest pain, Chest pain Transfer, Chest pain N/V,
     #          Chest pain Jaw pain L Arm pain, Chest pain NSTEMI,
     #          Chest pain Dizziness, Chest pain Nausea,
@@ -53,7 +53,7 @@ COMPLAINT_CATEGORIES = {
         r"|aortic\s+dissection"
     ),
 
-    # Respiratory — dyspnea, SOB, hypoxia, cough
+    # Respiratory: dyspnea, SOB, hypoxia, cough
     # Matches: Dyspnea, SHORTNESS OF BREATH, Dyspnea Hypoxia,
     #          Dyspnea on exertion, Cough Dyspnea,
     #          Dyspnea ABNORMAL LAB VALUES, Dyspnea Transfer
@@ -64,14 +64,14 @@ COMPLAINT_CATEGORIES = {
         r"|\bcough\b"
     ),
 
-    # Cardiac (non-chest-pain) — rhythm and syncope
+    # Cardiac (non-chest-pain): rhythm and syncope
     # Matches: Tachycardia, Syncope, N/V Tachycardia
     "cardiac_other": (
         r"tachycardia"
         r"|syncope"
     ),
 
-    # Neurological — AMS, stroke, dizziness, numbness
+    # Neurological: AMS, stroke, dizziness, numbness
     # Matches: Altered mental status, Dizziness, Confusion s/p Fall,
     #          Transfer CVA, s/p Fall SDH, L Arm numbness
     "neuro": (
@@ -84,7 +84,7 @@ COMPLAINT_CATEGORIES = {
         r"|stroke"
     ),
 
-    # Gastrointestinal — nausea, vomiting, GI bleed, epigastric
+    # Gastrointestinal: nausea, vomiting, GI bleed, epigastric
     # Matches: Epigastric pain, Coffee ground emesis, Diarrhea Hypotension,
     #          N/V, BRBPR, Hematemesis, Nausea
     # Note: "Chest pain, Nausea" → chest_pain wins (higher priority)
@@ -99,7 +99,7 @@ COMPLAINT_CATEGORIES = {
         r"|hematemesis"
     ),
 
-    # Psychiatric — psych holds, SI, substance use
+    # Psychiatric: psych holds, SI, substance use
     # Matches: Psychiatric hold, Psychiatric hold Altered mental status,
     #          Psych eval, ETOH SI, Insomnia
     # Note: "Psychiatric hold, Altered mental status" → neuro wins
@@ -112,7 +112,7 @@ COMPLAINT_CATEGORIES = {
         r"|\betoh\b"
     ),
 
-    # Trauma / injury — falls, assault, MVC, lacerations, wounds
+    # Trauma / injury: falls, assault, MVC, lacerations, wounds
     # Matches: s/p Fall, s/p Fall SDH, s/p Fall Transfer,
     #          Assault, Foot laceration, Wound eval Transfer,
     #          Transfer MVC, s/p Fall R Wrist pain R Wrist injury
@@ -127,7 +127,7 @@ COMPLAINT_CATEGORIES = {
         r"|\binjury\b"
     ),
 
-    # Infection / inflammatory — cellulitis, ulcers, fever
+    # Infection / inflammatory: cellulitis, ulcers, fever
     # Matches: R LEG CELLULITIS, R FOOT ULCER/CELLULITIS,
     #          Fever Neutropenia
     "infection": (
@@ -137,7 +137,7 @@ COMPLAINT_CATEGORIES = {
         r"|neutropenia"
     ),
 
-    # Metabolic / toxic — labs, glucose, overdose
+    # Metabolic / toxic: labs, glucose, overdose
     # Matches: Abnormal labs, Abnormal labs Weakness,
     #          Hyperglycemia Overdose
     # Note: "Dyspnea, ABNORMAL LAB VALUES" → dyspnea wins
