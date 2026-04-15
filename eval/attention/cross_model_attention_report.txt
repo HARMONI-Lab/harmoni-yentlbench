@@ -21,7 +21,7 @@ google_gemini-3.1-flash-lite-preview            0.0624                   0.1857 
            deepseek-ai_deepseek-v3.2            0.2068                   0.5429            0.5143                     0.3429                  -0.0571      0.1399  female_vs_male
       openai_gpt-5.4-nano-2026-03-17            0.2381                   0.5857            0.5286                     0.3429                  -0.0286      0.8964        presence
 
-  🏆 Models ranked by sex-invariance (best first):
+  Models ranked by sex-invariance (best first):
     1. anthropic_claude-opus-4-6default: sensitivity=0.0234, baseline_acc=0.5714
     2. anthropic_claude-opus-4-520251101: sensitivity=0.0290, baseline_acc=0.5429
     3. openai_gpt-5.4-2026-03-05: sensitivity=0.0412, baseline_acc=0.5429 (!!!) sig variant diff

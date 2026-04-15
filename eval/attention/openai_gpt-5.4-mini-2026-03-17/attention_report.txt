@@ -11,7 +11,7 @@
      Clinical boundary crossing (2↔3): 21.43%
      Cases where sex changes baseline: 34.29%
 
-  🎯 Baseline Deviation (vs no-sex-info baseline)
+  Baseline Deviation (vs no-sex-info baseline)
      Baseline (no sex) accuracy:       0.6143
 
      Sex: female:
@@ -53,18 +53,18 @@
 
      Dominant effect: binary_vs_nb (magnitude: 0.2214)
 
-  🔍 Information Leakage
+  Information Leakage
      NMI(sex variant, prediction):  0.004289
      χ² test p-value:               0.995549
      Cramér's V:                    0.059754
      NMI(sex label, deviation):     0.008761
 
-  ⚖️  Omnibus Statistical Significance (Fairness)
+  Omnibus Statistical Significance (Fairness)
      Variants tested:               4
      Cochran's Q (Accuracy):        p = 0.340342 (FDR adj p = 0.340342, stat=3.35)
      Friedman Test (Scores):        p = 0.151141 (FDR adj p = 0.302283, stat=5.30)
 
-  🎯 Vulnerability by ESI Level
+  Vulnerability by ESI Level
      ESI 1: 0.0% disagree, acc range = 0.0000
      ESI 2: 29.3% disagree, acc range = 0.0976
      ESI 3: 48.0% disagree, acc range = 0.0800
@@ -88,7 +88,7 @@
      [    HIGH] male: ESI 1→2 (under-triage) × 1
      [    HIGH] nb_label_only: ESI 1→2 (under-triage) × 1
 
-  🏥 Vulnerability by Clinical Category (top 10)
+  Vulnerability by Clinical Category (top 10)
                    trauma: n=  8, disagree=75.0%, acc range=0.1250
            extremity_pain: n= 11, disagree=45.5%, acc range=0.1818
                        gi: n=  6, disagree=33.3%, acc range=0.3333
@@ -96,7 +96,7 @@
                chest_pain: n= 13, disagree=23.1%, acc range=0.0769
                     neuro: n=  7, disagree=0.0%, acc range=0.0000
 
-  📈 Sex Sensitivity by Case Difficulty (baseline error)
+  Sex Sensitivity by Case Difficulty (baseline error)
               baseline_correct: n=  43, disagree=30.2%
              baseline_off_by_1: n=  24, disagree=41.7%
              baseline_off_by_2: n=   3, disagree=33.3%
