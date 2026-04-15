@@ -1,4 +1,4 @@
-# ESI Triage Gender Bias & Attention Analysis
+# YentlBench. Quantifying Sex-Label Attention Leak in LLM Emergency Triage
 
 ## Table of Contents
 - [Overview](#overview)
@@ -17,32 +17,34 @@
   - [JSON Structure](#json-structure)
 - [Usage](#usage)
   - [Step 0: Prepare Dataset](#step-0-prepare-dataset)
-  - [Step 1: Merge Runs](#step-1-merge-runs)
-  - [Step 2: Compute Benchmark Statistics (Optional)](#step-2-compute-benchmark-statistics-optional)
-  - [Step 3: Run the Analysis Pipeline](#step-3-run-the-analysis-pipeline)
+  - [Step 1: Running the Benchmark on Kaggle](#step-1-running-the-benchmark-on-kaggle)
+  - [Step 2: Merge Runs](#step-2-merge-runs)
+  - [Step 3: Compute Benchmark Statistics](#step-3-compute-benchmark-statistics)
+  - [Step 4: Run the Analysis Pipeline](#step-4-run-the-analysis-pipeline)
 - [Interpreting the Output](#interpreting-the-output)
 - [Project Structure](#project-structure)
+- [References & Citations](#references--citations)
 
 ## Overview
 
-This repository provides a rigorous, multi-stage analysis pipeline for quantifying how large language models (LLMs) attend to patient sex/gender information when performing Emergency Severity Index (ESI) triage scoring, a 5-level acuity classification system (ESI 1 = immediate resuscitation through ESI 5 = non-urgent) used universally in emergency departments to prioritize patient care.
+This repository provides a rigorous, multi-stage analysis pipeline for quantifying how large language models (LLMs) attend to patient sex/gender information when performing Emergency Severity Index (ESI) triage scoring [1], a 5-level acuity classification system (ESI 1 = immediate resuscitation through ESI 5 = non-urgent) used universally in emergency departments to prioritize patient care.
 
-ESI triage decisions should be driven exclusively by clinical presentation - chief complaint, vital signs, pain level, and mechanism of injury - not by the patient's sex. Any prediction change caused solely by altering or introducing a sex label constitutes **attention leak**: the model is incorporating a demographically-loaded token into what should be a purely clinical decision.
+ESI triage decisions should be driven exclusively by clinical presentation such as chief complaint, vital signs, pain level, and mechanism of injury  and not by the patient's sex. Any prediction change caused solely by altering or introducing a sex label constitutes attention leak: the model is incorporating a demographically-loaded token into what should be a purely clinical decision.
 
 This pipeline systematically detects, quantifies, and characterizes that attention leak across multiple models simultaneously.
 
 ## How It Works
 
-The evaluation framework is built on a controlled perturbation design. Each clinical vignette represents a standardized presentation including chief complaint, vital signs (HR, RR, SpO₂, BP, temperature), and pain score and it is run through each model in **four demographic variants** that are identical in every respect except the sex field:
+The evaluation framework is built on a controlled perturbation design. Each clinical vignette represents a standardized presentation including chief complaint, vital signs (HR, RR, SpO₂, BP, temperature), and pain score and it is run through each model in four demographic variants that are identical in every respect except the sex field:
 
 | Variant | Sex Field | Role |
 |---------|-----------|------|
-| `nb_ambiguous` | **Completely omitted** | **True clinical baseline** — the prediction the model makes with zero sex signal. Every deviation from this when sex IS provided is direct, causal evidence of attention to the sex token. |
+| `nb_ambiguous` | completely omitted | True clinical baseline (the prediction the model makes with zero sex signal). Every deviation from this when sex IS provided is direct, causal evidence of attention to the sex token. |
 | `female` | `"female"` | Explicit binary sex label |
 | `male` | `"male"` | Explicit binary sex label |
-| `nb_label_only` | `"non-binary"` | Explicit non-binary sex label — tests whether the model has learned specific associations with the "non-binary" token or treats it equivalently to omitted sex information |
+| `nb_label_only` | `"non-binary"` | Non-binary label tests whether the model has learned specific associations with the "non-binary" token or treats it equivalently to omitted sex information |
 
-This design enables three layers of causal inference that are impossible with observational data alone:
+This design enables three layers of causal inference:
 
 1. **Presence effect**: Does providing *any* sex label change predictions? (`nb_ambiguous` → all labeled variants)
 2. **Category effect**: Does binary sex (M/F) produce different behavior than non-binary? (`mean(female, male)` → `nb_label_only`)
@@ -51,12 +53,12 @@ This design enables three layers of causal inference that are impossible with ob
 
 ## Dataset Preparation
 
-The `dataset_prep.py` script prepares the MIMIC-IV-ED demo data for gender bias benchmarking. The preparation is split into two parts:
+The `dataset_prep.py` script prepares the MIMIC-IV-ED Demo data for gender bias benchmarking. The preparation is split into two parts:
 
 1. **Filtering & Curating (`dataset_males.csv`)**: 
    - Joins `edstays` and `triage` tables to capture the exact information available at intake.
    - Filters down exclusively to male patients to establish a clean ground truth free of historical female under-triage bias.
-   - Actively excludes cases where sex is a *legitimate* clinical variable (e.g., abdominal pain, foot infections, hyperglycemia). This ensures that any differential scoring detected in the benchmark is cleanly attributable to bias, not appropriate clinical reasoning.
+   - Actively excludes cases where sex is a *legitimate* clinical variable (e.g., abdominal pain). This ensures that any differential scoring detected in the benchmark is cleanly attributable to bias, not appropriate clinical reasoning.
    - Scope: Chest pain, extremity injuries, respiratory complaints, altered mental status, and trauma.
 
 2. **Gender Quintet Expansion (`dataset_quintets.csv`)**:
@@ -99,7 +101,7 @@ The pipeline is organized as a sequence of standalone scripts connected by CSV i
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Stage 1: `merge_runs.py` — Run Ingestion and Alignment
+### Stage 1: `merge_runs.py` Run Ingestion and Alignment
 
 Reads raw JSON result files produced by the batch evaluation harness. Each file contains one model × one demographic variant. The script:
 
@@ -112,18 +114,18 @@ Reads raw JSON result files produced by the batch evaluation harness. Each file 
 
 **Output**: `eval/merged_evaluations.csv`
 
-### Stage 2: `benchmark_stats.py` — Per-Run Performance Metrics
+### Stage 2: `benchmark_stats.py` Per-Run Performance Metrics
 
 Computes comprehensive classification and ordinal metrics for every run (model × variant), treating the problem both as a 5-class classification task and as an ordinal regression:
 
-- **Classification**: accuracy, balanced accuracy, precision / recall / F1 (macro, weighted, micro, and per-ESI-level), Cohen's κ (linear and quadratic — the quadratic variant penalizes distant misclassifications, e.g., ESI 1 predicted as ESI 5, more heavily than near-misses), Matthews Correlation Coefficient
+- **Classification**: accuracy, balanced accuracy, precision / recall / F1 (macro, weighted, micro, and per-ESI-level), Cohen's κ (linear and quadratic, the quadratic variant penalizes distant misclassifications, e.g., ESI 1 predicted as ESI 5, more heavily than near-misses), Matthews Correlation Coefficient
 - **Ordinal**: mean absolute error, RMSE, median absolute error, accuracy within 1 ESI level (a standard ESI benchmark metric), over-triage rate (model assigns lower/more-urgent ESI than ground truth), under-triage rate, mean signed error (directional bias), Spearman ρ, Kendall τ
-- **Clinical safety**: ESI-1 sensitivity (do we catch every resuscitation-level patient?), high-acuity accuracy (ESI 1–2), severe under-triage rate (ESI 1–2 patients classified as ESI 3+), critical under-triage rate (ESI 1–2 classified as ESI 4–5)
+- **Clinical safety**: ESI-1 sensitivity (do we catch every resuscitation-level patient?), high-acuity accuracy (ESI 1-2), severe under-triage rate (ESI 1-2 patients classified as ESI 3+), critical under-triage rate (ESI 1-2 classified as ESI 4-5)
 - **Confidence intervals**: Bootstrap 95% CIs (1000 samples) for accuracy, balanced accuracy, Cohen's κ, F1 macro, and MAE — essential for determining whether differences between runs are statistically meaningful or within sampling noise
 
 **Outputs**: `eval/benchmark_stats.csv` (compact), `eval/benchmark_stats_full.csv` (includes 5×5 confusion matrix cells)
 
-### Stage 3: `attention_pipeline/` — Deep Attention Analysis (11 Analyses)
+### Stage 3: `attention_pipeline/` Deep Attention Analysis (11 Analyses)
 
 The core analytical engine. For each model, runs 11 complementary analyses that probe *how*, *where*, and *why* the model attends to sex information:
 
@@ -135,10 +137,10 @@ Measures how each sex-labeled variant's predictions deviate from the `nb_ambiguo
 
 Decomposes the total sex-information effect into four orthogonal layers:
 
-- **Layer 1 (Presence)**: `nb_ambiguous` vs `mean(female, male, nb_label_only)` — does providing *any* sex field change predictions?
-- **Layer 2 (Category)**: `mean(female, male)` vs `nb_label_only` — does binary sex behave differently from non-binary?
-- **Layer 3 (Value)**: `female` vs `male` — the classic gender bias measure, with Wilcoxon test and per-ESI breakdown
-- **Layer 4 (Non-binary token)**: `nb_label_only` vs `nb_ambiguous` — does "non-binary" trigger specific learned associations, or does the model treat it identically to missing sex info?
+- **Layer 1 (Presence)**: `nb_ambiguous` vs `mean(female, male, nb_label_only)` does providing *any* sex field change predictions?
+- **Layer 2 (Category)**: `mean(female, male)` vs `nb_label_only` does binary sex behave differently from non-binary?
+- **Layer 3 (Value)**: `female` vs `male` the classic gender bias measure, with Wilcoxon test and per-ESI breakdown
+- **Layer 4 (Non-binary token)**: `nb_label_only` vs `nb_ambiguous` does "non-binary" trigger specific learned associations, or does the model treat it identically to missing sex info?
 
 Ranks the four layers by magnitude and identifies the *dominant* effect for each model.
 
@@ -153,12 +155,12 @@ Builds 5×5 transition matrices showing exactly which ESI levels shift to which 
 
 #### Analysis 4. Information-Theoretic Leakage
 
-Quantifies how much information about the patient's sex can be recovered from the model's predictions alone. If predictions are truly sex-invariant, knowing the prediction should give you zero information about which sex variant was used. Computes: Mutual Information and Normalized Mutual Information between variant identity and prediction, between variant identity and correctness (fairness concern), between variant identity and error direction (systematic bias), χ² test of independence with Cramér's V effect size. Also measures MI between sex label identity and *deviation from baseline* — testing whether different sex labels produce different *patterns* of deviation.
+Quantifies how much information about the patient's sex can be recovered from the model's predictions alone. If predictions are truly sex-invariant, knowing the prediction should give you zero information about which sex variant was used. Computes: Mutual Information and Normalized Mutual Information between variant identity and prediction, between variant identity and correctness (fairness concern), between variant identity and error direction (systematic bias), χ² test of independence with Cramér's V effect size. Also measures MI between sex label identity and deviation from baseline, testing whether different sex labels produce different patterns of deviation.
 
 #### Analysis 5. Perturbation Sensitivity Scoring
 
 We adapt perturbation sensitivity analysis to clinical demographic auditing, operationalizing a Perturbation Sensitivity Score (PSS) for sex-label token substitution in ESI triage.
-The PSS is a single composite score per model capturing total sensitivity to sex perturbation, combining: mean pairwise disagreement rate across all 6 variant pairs, mean per-case prediction variance across variants, mean per-case prediction range. Also computes: % of cases where *any* sex label changes the baseline prediction, % of cases with prediction range ≥2 ESI levels (clinically dangerous), % of cases fully consistent across all 4 variants. This score is the primary metric for **ranking models by sex-invariance**.
+The PSS is a single composite score per model capturing total sensitivity to sex perturbation, combining: mean pairwise disagreement rate across all 6 variant pairs, mean per-case prediction variance across variants, mean per-case prediction range. Also computes: % of cases where any sex label changes the baseline prediction, % of cases with prediction range ≥2 ESI levels (clinically dangerous), % of cases fully consistent across all 4 variants. This score is the primary metric for ranking models by sex-invariance.
 
 #### Analysis 6. Vulnerability Profiling by ESI Level and Clinical Category
 
@@ -171,11 +173,11 @@ For each stratum: disagreement rate, accuracy range across variants, per-variant
 
 #### Analysis 7. Decision Boundary Analysis
 
-Evaluates how often adding sex info pushes predictions across each adjacent ESI boundary (1↔2, 2↔3, 3↔4, 4↔5). The ESI 2↔3 boundary is particularly critical: ESI 2 patients require immediate intervention while ESI 3 patients may wait — a sex-induced crossing here directly affects patient safety. Reports crossing counts, crossing rates relative to near-boundary cases, and direction (toward more urgent vs less urgent).
+Evaluates how often adding sex info pushes predictions across each adjacent ESI boundary (1↔2, 2↔3, 3↔4, 4↔5). The ESI 2↔3 boundary is particularly critical: ESI 2 patients require immediate intervention while ESI 3 patients may wait, a sex-induced crossing here directly affects patient safety. Reports crossing counts, crossing rates relative to near-boundary cases, and direction (toward more urgent vs less urgent).
 
 #### Analysis 8. Consistency by Case Difficulty
 
-Tests whether sex-sensitivity compounds with clinical uncertainty. Uses baseline (no-sex-info) error as a difficulty proxy: cases the baseline gets right are "easy", cases it misses by 1 ESI level are "moderate", cases it misses by 2+ are "hard". If disagreement rate increases with difficulty, sex noise is most destabilizing exactly when the model is already uncertain — a compounding safety risk.
+Tests whether sex-sensitivity compounds with clinical uncertainty. Uses baseline (no-sex-info) error as a difficulty proxy: cases the baseline gets right are "easy", cases it misses by 1 ESI level are "moderate", cases it misses by 2+ are "hard". If disagreement rate increases with difficulty, sex noise is most destabilizing exactly when the model is already uncertain (a compounding safety risk).
 
 #### Analysis 9. Case-Level Detail
 
@@ -332,14 +334,18 @@ Each `.run.json` file must contain a `subruns` array, where each item has the fo
 
 ### Step 0: Prepare Dataset
 
-Run the dataset preparation script to process the raw MIMIC-IV-ED demo tables into the expanded quintets used for LLM evaluation.
+Run the dataset preparation script to process the raw MIMIC-IV-ED Demo tables into the expanded quintets used for LLM evaluation.
 
 ```bash
 python dataset_prep.py
 ```
 This generates `dataset_output/dataset_males.csv` and `dataset_output/dataset_quintets.csv`.
 
-### Step 1: Merge Runs
+## Step 1: Running the Benchmark on Kaggle
+
+This benchmark is designed to be run on Kaggle. You can find more details and run the benchmark directly on Kaggle: [Yentlbench Kaggle Benchmark](https://www.kaggle.com/benchmarks/innacampo/yentlbench)
+
+### Step 2: Merge Runs
 
 First, merge all the individual `.run.json` files into a unified CSV. This script extracts the prompts, matches them by SHA-256 hash, validates the ground-truth labels across runs, and performs a highly-optimized outer join.
 
@@ -352,7 +358,7 @@ python merge_runs.py --results-dir results --output eval/merged_evaluations.csv 
 - `--include-metrics`: Retains token counts and latency metrics.
 - `--verbose`: Enables debug logging.
 
-### Step 2: Compute Benchmark Statistics (Optional)
+### Step 3: Compute Benchmark Statistics
 
 Once the data is merged, you can optionally compute per-run performance metrics:
 
@@ -367,7 +373,7 @@ python benchmark_stats.py --input eval/merged_evaluations.csv --output eval/benc
 - `--n-bootstrap`: Number of bootstrap samples for confidence intervals (default: 1000).
 - `--verbose`: Enables debug logging.
 
-### Step 3: Run the Analysis Pipeline
+### Step 4: Run the Analysis Pipeline
 
 Now pass the merged CSV to the orchestrator pipeline. This script discovers all evaluated models and runs the 11-step analysis suite against them.
 
@@ -376,7 +382,7 @@ python attention_pipeline/pipeline.py --input eval/merged_evaluations.csv --outp
 ```
 **Arguments:**
 - `--input`: Path to the merged CSV from Step 1.
-- `--output-dir`: Where to save the generated analysis CSVs (organized in subdirectories per model).
+- `--output-dir`: Where to save the generated analysis files (organized in subdirectories per model).
 - `--verbose`: Enables debug logging.
 
 ## Interpreting the Output
@@ -389,7 +395,7 @@ When the pipeline finishes, it will print a **Cross-Model Attention Ranking** to
 Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per model, including dangerous triage transitions and category-specific vulnerability matrices.
 
 ## Project Structure
-- `dataset_prep.py`: Prepares MIMIC-IV-ED demo data, handles the gender quintet expansion, and filters out complaints where sex is a legitimate clinical variable (e.g., abdominal pain).
+- `dataset_prep.py`: Prepares MIMIC-IV-ED Demo data, handles the gender quintet expansion, and filters out complaints where sex is a legitimate clinical variable (e.g., abdominal pain).
 - `merge_runs.py`: Parses and joins JSON output files.
 - `benchmark_stats.py`: Computes per-run benchmark statistics.
 - `attention_pipeline/pipeline.py`: Main orchestrator for the analysis suite.
@@ -398,3 +404,17 @@ Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per 
 - `attention_pipeline/visuals.py`: Generates cross-model plots and visualization charts.
 - `attention_pipeline/report.py` / `attention_pipeline/save.py`: Handles formatting outputs for the console and saving results to disk.
 - `attention_pipeline/util.py`: Shared data loading and helper functions.
+
+This work was created as part of the Kaggle competition "Measuring Progress Toward AGI - Cognitive Abilities". 
+
+## References & citations
+[1] Gilboy N, et al. Emergency Severity Index, Version 4. AHRQ. 2011.
+Healy, B. The Yentl Syndrome. NEJM, 1991; 325(4):274–276.
+Johnson A, et al. MIMIC-IV-ED Demo (v2.2). PhysioNet. 2023. doi:10.13026/jzz5-vs76
+Colvin S, et al. Pydantic: Data validation using Python type hints. GitHub; 2017.
+Cochran WG. The comparison of percentages in matched samples. Biometrika. 1950;37:256–266.
+Friedman M. The use of ranks to avoid the assumption of normality. J Am Stat Assoc. 1937;32:675–701.
+Benjamini Y, Hochberg Y. Controlling the false discovery rate. J R Stat Soc Series B. 1995;57:289–300.
+Wei J, et al. Chain-of-thought prompting elicits reasoning in LLMs. NeurIPS. 2022;35:24824-37.
+Plomecka, B, et al. [Measuring Progress Toward AGI - Cognitive Abilities.](https://kaggle.com/competitions/kaggle-measuring-agi) Kaggle; 2026.
+
