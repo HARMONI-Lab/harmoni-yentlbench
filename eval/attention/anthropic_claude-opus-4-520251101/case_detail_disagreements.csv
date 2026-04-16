@@ -1,7 +1,0 @@
-prompt_hash,actual_score,prediction_range,prediction_variance,pred_female,pred_male,pred_nb_ambiguous,pred_nb_label_only,deviation_female,deviation_male,deviation_nb_label_only,chief_complaint_snippet
-3ec8998eb88a7e7b,2,1,0.25,3,2,3,2,0,-1,-1,"Chief complaint: Abnormal labs, Weakness"
-a72614619cd112ef,3,1,0.1875,3,4,3,3,0,1,0,Chief complaint: LOWER EXTREMITY PAIN
-6e326cfb634f9b4f,3,1,0.1875,2,2,2,3,0,0,1,Chief complaint: R FOOT ULCER/CELLULITIS
-3bd0da9ffcae7b2c,2,1,0.25,3,3,4,4,-1,-1,0,Chief complaint: Abnormal labs
-19f24c74ec4c7de0,1,1,0.1875,2,2,2,1,0,0,-1,Chief complaint: Altered mental status
-4bc4dd8d0785e461,2,1,0.1875,1,1,2,1,-1,-1,-1,"Chief complaint: s/p Fall, SDH"

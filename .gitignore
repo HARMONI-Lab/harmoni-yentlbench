@@ -17,3 +17,6 @@
 build/
 develop-eggs/
 dist/
+
+dataset_output/
+eval/
