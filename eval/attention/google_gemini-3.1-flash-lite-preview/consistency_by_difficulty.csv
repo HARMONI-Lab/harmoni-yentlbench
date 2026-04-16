@@ -1,4 +1,0 @@
-baseline_error,n_cases,pct_any_disagreement,mean_prediction_range,mean_prediction_variance
-0,34,0.08823529411764706,0.08823529411764706,0.01838235294117647
-1,32,0.28125,0.28125,0.05859375
-2,4,0.25,0.25,0.046875
