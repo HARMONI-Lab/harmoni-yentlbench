@@ -17,7 +17,7 @@ import sys
 import warnings
 from typing import Optional, List, Dict, Any
 
-from config import BASELINE_VARIANT
+from yentlbench.config import BASELINE_VARIANT
 from util import (
     setup_logging,
     load_merged_data,

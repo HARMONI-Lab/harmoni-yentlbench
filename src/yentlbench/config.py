@@ -87,7 +87,7 @@ COMPLAINT_CATEGORIES = {
     # Gastrointestinal: nausea, vomiting, GI bleed, epigastric
     # Matches: Epigastric pain, Coffee ground emesis, Diarrhea Hypotension,
     #          N/V, BRBPR, Hematemesis, Nausea
-    # Note: "Chest pain, Nausea" → chest_pain wins (higher priority)
+    # Note: "Chest pain, Nausea" -> chest_pain wins (higher priority)
     "gi": (
         r"epigastric"
         r"|coffee\s+ground"
@@ -102,7 +102,7 @@ COMPLAINT_CATEGORIES = {
     # Psychiatric: psych holds, SI, substance use
     # Matches: Psychiatric hold, Psychiatric hold Altered mental status,
     #          Psych eval, ETOH SI, Insomnia
-    # Note: "Psychiatric hold, Altered mental status" → neuro wins
+    # Note: "Psychiatric hold, Altered mental status" -> neuro wins
     "psych": (
         r"psychiatr"
         r"|psych\s+eval"
@@ -116,7 +116,7 @@ COMPLAINT_CATEGORIES = {
     # Matches: s/p Fall, s/p Fall SDH, s/p Fall Transfer,
     #          Assault, Foot laceration, Wound eval Transfer,
     #          Transfer MVC, s/p Fall R Wrist pain R Wrist injury
-    # Note: "Confusion, s/p Fall" → neuro wins; "s/p Fall, SDH" → neuro wins
+    # Note: "Confusion, s/p Fall" -> neuro wins; "s/p Fall, SDH" -> neuro wins
     "trauma": (
         r"s/p\s+fall"
         r"|\bfall\b"
@@ -140,7 +140,7 @@ COMPLAINT_CATEGORIES = {
     # Metabolic / toxic: labs, glucose, overdose
     # Matches: Abnormal labs, Abnormal labs Weakness,
     #          Hyperglycemia Overdose
-    # Note: "Dyspnea, ABNORMAL LAB VALUES" → dyspnea wins
+    # Note: "Dyspnea, ABNORMAL LAB VALUES" -> dyspnea wins
     "metabolic": (
         r"hyperglycemia"
         r"|abnormal\s+lab"
@@ -151,7 +151,7 @@ COMPLAINT_CATEGORIES = {
     # Matches: R RIB PAIN, R Leg pain, L Leg pain, R Foot pain,
     #          Toe pain, LOWER EXTREMITY PAIN, Lower back pain,
     #          L Arm pain L Arm swelling, R Wrist pain
-    # Note: "Chest pain, Jaw pain, L Arm pain" → chest_pain wins
+    # Note: "Chest pain, Jaw pain, L Arm pain" -> chest_pain wins
     "extremity_pain": (
         r"(?:leg|arm|foot|rib|toe|wrist|extremity|back)\s+pain"
         r"|lower\s+back"
@@ -159,7 +159,7 @@ COMPLAINT_CATEGORIES = {
 
     # General weakness / fatigue
     # Matches: Weakness, Fatigue s/p Fall
-    # Note: "Fatigue, s/p Fall" → trauma wins; "Abnormal labs, Weakness" → metabolic wins
+    # Note: "Fatigue, s/p Fall" -> trauma wins; "Abnormal labs, Weakness" -> metabolic wins
     "weakness_fatigue": (
         r"\bweakness\b"
         r"|\bfatigue\b"

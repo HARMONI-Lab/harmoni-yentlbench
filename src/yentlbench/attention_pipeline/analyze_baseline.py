@@ -12,7 +12,7 @@ from sklearn.metrics import (
     mean_absolute_error,
 )
 
-from config import (
+from yentlbench.config import (
     ESI_LEVELS,
     BASELINE_VARIANT,
     LABELED_VARIANTS,

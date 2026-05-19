@@ -9,7 +9,7 @@ from typing import Optional, List, Dict, Tuple
 import numpy as np
 import pandas as pd
 
-from config import COMPLAINT_CATEGORIES
+from yentlbench.config import COMPLAINT_CATEGORIES
 
 logger = logging.getLogger(__name__)
 

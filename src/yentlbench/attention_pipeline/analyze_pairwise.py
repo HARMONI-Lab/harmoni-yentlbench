@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import stats as scipy_stats
 from sklearn.metrics import accuracy_score
 
-from config import BASELINE_VARIANT, LABELED_VARIANTS
+from yentlbench.config import BASELINE_VARIANT, LABELED_VARIANTS
 
 
 def build_case_detail_table(

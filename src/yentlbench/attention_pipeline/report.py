@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional, IO
 import numpy as np
 import pandas as pd
 
-from config import LABELED_VARIANTS, VARIANT_DESCRIPTIONS
+from yentlbench.config import LABELED_VARIANTS, VARIANT_DESCRIPTIONS
 
 
 def _get_risk_level(from_esi: int, shift: int) -> str:
