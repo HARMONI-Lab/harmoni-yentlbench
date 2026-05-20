@@ -268,11 +268,11 @@ This pipeline provides the quantitative framework to answer:
    cd harmoni-yentlbench
    ```
 
-2. Create a virtual environment and install the requirements:
+2. Create a virtual environment and install the package in editable mode:
    ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
-   pip install -r requirements.txt
+   pip install -e .
    ```
 
 ## Expected Data Format
@@ -331,12 +331,16 @@ Each `.run.json` file must contain a `subruns` array, where each item has the fo
 
 ## Usage
 
+The pipeline is now accessible via the `yentlbench` CLI. You can use the individual commands or the provided `Makefile` for a streamlined workflow.
+
 ### Step 0: Prepare Dataset
 
-Run the dataset preparation script to process the raw MIMIC-IV-ED Demo tables into the expanded quintets used for LLM evaluation.
+Run the dataset preparation to process the raw MIMIC-IV-ED Demo tables into the expanded quintets used for LLM evaluation.
 
 ```bash
-python dataset_prep.py
+yentlbench prepare
+# or using make:
+make prepare
 ```
 This generates `dataset_output/dataset_males.csv` and `dataset_output/dataset_quintets.csv`.
 
@@ -346,10 +350,12 @@ This benchmark is designed to be run on Kaggle. You can find more details and ru
 
 ### Step 2: Merge Runs
 
-First, merge all the individual `.run.json` files into a unified CSV. This script extracts the prompts, matches them by SHA-256 hash, validates the ground-truth labels across runs, and performs a highly-optimized outer join.
+First, merge all the individual `.run.json` files into a unified CSV.
 
 ```bash
-python merge_runs.py --results-dir results --output eval/merged_evaluations.csv --include-metrics --verbose
+yentlbench merge --results-dir results --output eval/merged_evaluations.csv --include-metrics --verbose
+# or using make:
+make merge
 ```
 **Arguments:**
 - `--results-dir`: Directory containing your `*.run.json` files.
@@ -359,30 +365,20 @@ python merge_runs.py --results-dir results --output eval/merged_evaluations.csv 
 
 ### Step 3: Compute Benchmark Statistics
 
-Once the data is merged, you can optionally compute per-run performance metrics:
+Once the data is merged, you can compute per-run performance metrics:
 
 ```bash
-python benchmark_stats.py --input eval/merged_evaluations.csv --output eval/benchmark_stats.csv --output-full eval/benchmark_stats_full.csv --output-report eval/benchmark_report.txt --verbose
+yentlbench analyze --input eval/merged_evaluations.csv --output-stats eval/benchmark_stats.csv --output-attention eval/attention --verbose
+# or using make:
+make analyze
 ```
-**Arguments:**
-- `--input`: Path to the merged CSV from Step 1.
-- `--output`: Output CSV for summary statistics (default: eval/benchmark_stats.csv).
-- `--output-full`: Output CSV with detailed metrics including confusion matrices (default: eval/benchmark_stats_full.csv).
-- `--output-report`: Output text file for formatted report (default: eval/benchmark_report.txt).
-- `--n-bootstrap`: Number of bootstrap samples for confidence intervals (default: 1000).
-- `--verbose`: Enables debug logging.
+*Note: The `analyze` command now performs both the benchmark statistics calculation and the deep attention analysis pipeline.*
 
-### Step 4: Run the Analysis Pipeline
-
-Now pass the merged CSV to the orchestrator pipeline. This script discovers all evaluated models and runs the 11-step analysis suite against them.
-
+### Full Pipeline Execution
+If you have your result files in `results/`, you can run the entire workflow (prepare $\to$ run $\to$ merge $\to$ analyze) with a single command:
 ```bash
-python attention_pipeline/pipeline.py --input eval/merged_evaluations.csv --output-dir eval/attention --verbose
+make all
 ```
-**Arguments:**
-- `--input`: Path to the merged CSV from Step 1.
-- `--output-dir`: Where to save the generated analysis files (organized in subdirectories per model).
-- `--verbose`: Enables debug logging.
 
 ## Interpreting the Output
 
@@ -394,15 +390,16 @@ When the pipeline finishes, it will print a **Cross-Model Attention Ranking** to
 Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per model, including dangerous triage transitions and category-specific vulnerability matrices.
 
 ## Project Structure
-- `dataset_prep.py`: Prepares MIMIC-IV-ED Demo data, handles the gender quintet expansion, and filters out complaints where sex is a legitimate clinical variable (e.g., abdominal pain).
-- `merge_runs.py`: Parses and joins JSON output files.
-- `benchmark_stats.py`: Computes per-run benchmark statistics.
-- `attention_pipeline/pipeline.py`: Main orchestrator for the analysis suite.
-- `attention_pipeline/config.py`: Configuration for clinical categories, ESI levels, and variant constants.
-- `attention_pipeline/analyze_*.py`: Modular scripts containing the statistical tests and calculations for each step of the pipeline.
-- `attention_pipeline/visuals.py`: Generates cross-model plots and visualization charts.
-- `attention_pipeline/report.py` / `attention_pipeline/save.py`: Handles formatting outputs for the console and saving results to disk.
-- `attention_pipeline/util.py`: Shared data loading and helper functions.
+- `src/yentlbench/__main__.py`: Unified CLI entrypoint for the complete workflow.
+- `src/yentlbench/dataset_prep.py`: Prepares MIMIC-IV-ED Demo data, handles the gender quintet expansion, and filters out complaints where sex is a legitimate clinical variable (e.g., abdominal pain).
+- `src/yentlbench/merge_runs.py`: Parses and joins JSON output files.
+- `src/yentlbench/benchmark_stats.py`: Computes per-run benchmark statistics.
+- `src/yentlbench/attention_pipeline/pipeline.py`: Main orchestrator for the analysis suite.
+- `src/yentlbench/config.py`: Configuration for clinical categories, ESI levels, and variant constants.
+- `src/yentlbench/attention_pipeline/analyze_*.py`: Modular scripts containing the statistical tests and calculations for each step of the pipeline.
+- `src/yentlbench/attention_pipeline/visuals.py`: Generates cross-model plots and visualization charts.
+- `src/yentlbench/attention_pipeline/report.py` / `src/yentlbench/attention_pipeline/save.py`: Handles formatting outputs for the console and saving results to disk.
+- `src/yentlbench/attention_pipeline/util.py`: Shared data loading and helper functions.
 
 This work was created as part of the Kaggle competition "Measuring Progress Toward AGI - Cognitive Abilities". [7] 
 
