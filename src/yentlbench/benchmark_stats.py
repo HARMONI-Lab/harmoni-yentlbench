@@ -28,13 +28,12 @@ from sklearn.metrics import (
     cohen_kappa_score,
     confusion_matrix,
     matthews_corrcoef,
-    classification_report,
     mean_absolute_error,
     mean_squared_error,
-    log_loss,
 )
 
 import warnings
+
 warnings.filterwarnings("ignore")
 
 # ---------------------------------------------------------------------------
@@ -127,9 +126,7 @@ def compute_classification_stats(
             stats[f"recall_esi_{level}"] = recall_score(
                 y_true_bin, y_pred_bin, zero_division=0
             )
-            stats[f"f1_esi_{level}"] = f1_score(
-                y_true_bin, y_pred_bin, zero_division=0
-            )
+            stats[f"f1_esi_{level}"] = f1_score(y_true_bin, y_pred_bin, zero_division=0)
         else:
             stats[f"precision_esi_{level}"] = None
             stats[f"recall_esi_{level}"] = None
@@ -247,7 +244,7 @@ def compute_clinical_safety_stats(
     if n_high_acuity > 0:
         high_acuity_pred = y_pred[high_acuity_mask]
         high_acuity_true = y_true[high_acuity_mask]
-        high_acuity_errors = errors[high_acuity_mask]
+        errors[high_acuity_mask]
 
         # Accuracy on high-acuity
         stats["high_acuity_accuracy"] = float(
@@ -356,7 +353,9 @@ def compute_run_stats(
     y_pred = y_pred_full[valid_mask].astype(int).values
 
     if len(y_true) == 0:
-        logger.warning("Run '%s' has no valid predictions, skipping metrics.", run_label)
+        logger.warning(
+            "Run '%s' has no valid predictions, skipping metrics.", run_label
+        )
         return stats
 
     # --- Classification ---
@@ -480,9 +479,7 @@ def print_stats_summary(stats_df: pd.DataFrame, file: Any = sys.stdout) -> None:
     summary = stats_df[available].set_index("run").T
 
     # Format floats
-    formatted = summary.map(
-        lambda x: f"{x:.4f}" if isinstance(x, float) else str(x)
-    )
+    formatted = summary.map(lambda x: f"{x:.4f}" if isinstance(x, float) else str(x))
     print(formatted.to_string(), file=file)
 
     # Highlight best performer for key metrics
@@ -540,7 +537,7 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         "--output-full",
         default="eval/benchmark_stats_full.csv",
         help="Output CSV with ALL metrics including confusion matrix cells "
-             "(default: eval/benchmark_stats_full.csv)",
+        "(default: eval/benchmark_stats_full.csv)",
     )
     parser.add_argument(
         "--output-report",

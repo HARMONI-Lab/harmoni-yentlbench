@@ -35,7 +35,9 @@ def save_model_results(
     # Vulnerability by clinical category
     cat = result.get("vulnerability_by_category", pd.DataFrame())
     if not cat.empty:
-        cat.to_csv(os.path.join(model_dir, "vulnerability_by_category.csv"), index=False)
+        cat.to_csv(
+            os.path.join(model_dir, "vulnerability_by_category.csv"), index=False
+        )
 
     # Boundary analysis
     boundary = result.get("boundary_analysis", pd.DataFrame())
@@ -45,13 +47,21 @@ def save_model_results(
     # Consistency by difficulty
     diff = result.get("consistency_by_difficulty", pd.DataFrame())
     if not diff.empty:
-        diff.to_csv(os.path.join(model_dir, "consistency_by_difficulty.csv"), index=False)
+        diff.to_csv(
+            os.path.join(model_dir, "consistency_by_difficulty.csv"), index=False
+        )
 
     # Pairwise comparisons
     pairwise_data = result.get("pairwise", [])
-    pairwise = pd.DataFrame(pairwise_data) if isinstance(pairwise_data, list) else pairwise_data
+    pairwise = (
+        pd.DataFrame(pairwise_data)
+        if isinstance(pairwise_data, list)
+        else pairwise_data
+    )
     if not pairwise.empty:
-        pairwise.to_csv(os.path.join(model_dir, "pairwise_comparisons.csv"), index=False)
+        pairwise.to_csv(
+            os.path.join(model_dir, "pairwise_comparisons.csv"), index=False
+        )
 
     # Case-level detail
     case_df = result.get("case_detail", pd.DataFrame())
@@ -76,7 +86,11 @@ def save_model_results(
         {f"info_{k}": v for k, v in result.get("information_leakage", {}).items()}
     )
     model_summary.update(
-        {f"stat_{k}": v for k, v in result.get("statistical_significance", {}).items() if not k.startswith("error")}
+        {
+            f"stat_{k}": v
+            for k, v in result.get("statistical_significance", {}).items()
+            if not k.startswith("error")
+        }
     )
     pd.DataFrame([model_summary]).to_csv(
         os.path.join(model_dir, "model_attention_summary.csv"), index=False

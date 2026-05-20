@@ -20,7 +20,6 @@ import glob
 import sys
 from dataclasses import dataclass, asdict
 from typing import Optional, List, Dict, Any
-from functools import reduce
 
 import pandas as pd
 
@@ -271,9 +270,7 @@ def prepare_for_merge(
 
 def validate_actual_scores(merged_df: pd.DataFrame) -> None:
     """Warn if actual_score columns from different runs disagree."""
-    actual_cols = sorted(
-        [c for c in merged_df.columns if c.startswith("actual_score")]
-    )
+    actual_cols = sorted([c for c in merged_df.columns if c.startswith("actual_score")])
     if len(actual_cols) <= 1:
         return
 
@@ -302,9 +299,7 @@ def merge_dataframes(dataframes: List[pd.DataFrame]) -> pd.DataFrame:
         merged = pd.concat(dfs_indexed, axis=1).reset_index()
 
     # Consolidate actual_score columns
-    actual_cols = sorted(
-        [c for c in merged.columns if c.startswith("actual_score")]
-    )
+    actual_cols = sorted([c for c in merged.columns if c.startswith("actual_score")])
     if actual_cols:
         validate_actual_scores(merged)
         merged["actual_score"] = merged[actual_cols].bfill(axis=1).iloc[:, 0]
@@ -435,9 +430,7 @@ def main(argv: Optional[List[str]] = None) -> None:
 
         logger.debug("Run label: %s  (%d rows)", suffix, len(df))
 
-        df_clean = prepare_for_merge(
-            df, suffix, include_metrics=args.include_metrics
-        )
+        df_clean = prepare_for_merge(df, suffix, include_metrics=args.include_metrics)
         dataframes.append(df_clean)
 
     if not dataframes:

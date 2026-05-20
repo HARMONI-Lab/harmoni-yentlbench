@@ -45,10 +45,7 @@ Tables excluded intentionally:
 
 import random
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from pathlib import Path
-
 
 # =============================================================================
 # PART 1: Dataset Preparation
@@ -99,28 +96,30 @@ df["pain"] = pd.to_numeric(df["pain"], errors="coerce")
 print("Pain value counts (top 10):")
 print(df["pain"].value_counts().head(10))
 
-df = df[[
-    "subject_id",
-    "stay_id",
-    # Demographics from edstays
-    "gender",
-    "race",
-    "arrival_transport",
-    "disposition",
-    "intime",
-    "outtime",
-    # Triage snapshot from triage
-    "chiefcomplaint",
-    "pain",
-    "temperature",
-    "heartrate",
-    "resprate",
-    "o2sat",
-    "sbp",
-    "dbp",
-    # Target
-    "acuity",
-]]
+df = df[
+    [
+        "subject_id",
+        "stay_id",
+        # Demographics from edstays
+        "gender",
+        "race",
+        "arrival_transport",
+        "disposition",
+        "intime",
+        "outtime",
+        # Triage snapshot from triage
+        "chiefcomplaint",
+        "pain",
+        "temperature",
+        "heartrate",
+        "resprate",
+        "o2sat",
+        "sbp",
+        "dbp",
+        # Target
+        "acuity",
+    ]
+]
 
 print(df.head(3))
 
@@ -277,34 +276,152 @@ print(f"Seed   : {SEED}")
 # LLM processes gender the way it would in a real clinical note.
 
 MALE_NAMES = [
-    "James", "Michael", "Robert", "David", "William", "Richard", "Joseph",
-    "Thomas", "Charles", "Christopher", "Daniel", "Matthew", "Anthony",
-    "Mark", "Donald", "Steven", "Paul", "Andrew", "Kenneth", "Joshua",
-    "Kevin", "Brian", "George", "Timothy", "Ronald", "Edward", "Jason",
-    "Jeffrey", "Ryan", "Jacob", "Gary", "Nicholas", "Eric", "Jonathan",
-    "Stephen", "Larry", "Justin", "Scott", "Brandon", "Benjamin",
-    "Samuel", "Raymond", "Gregory", "Frank", "Alexander", "Patrick",
-    "Jack", "Dennis", "Jerry", "Tyler",
+    "James",
+    "Michael",
+    "Robert",
+    "David",
+    "William",
+    "Richard",
+    "Joseph",
+    "Thomas",
+    "Charles",
+    "Christopher",
+    "Daniel",
+    "Matthew",
+    "Anthony",
+    "Mark",
+    "Donald",
+    "Steven",
+    "Paul",
+    "Andrew",
+    "Kenneth",
+    "Joshua",
+    "Kevin",
+    "Brian",
+    "George",
+    "Timothy",
+    "Ronald",
+    "Edward",
+    "Jason",
+    "Jeffrey",
+    "Ryan",
+    "Jacob",
+    "Gary",
+    "Nicholas",
+    "Eric",
+    "Jonathan",
+    "Stephen",
+    "Larry",
+    "Justin",
+    "Scott",
+    "Brandon",
+    "Benjamin",
+    "Samuel",
+    "Raymond",
+    "Gregory",
+    "Frank",
+    "Alexander",
+    "Patrick",
+    "Jack",
+    "Dennis",
+    "Jerry",
+    "Tyler",
 ]
 
 FEMALE_NAMES = [
-    "Mary", "Patricia", "Jennifer", "Linda", "Barbara", "Elizabeth",
-    "Susan", "Jessica", "Sarah", "Karen", "Lisa", "Nancy", "Betty",
-    "Margaret", "Sandra", "Ashley", "Dorothy", "Kimberly", "Emily",
-    "Donna", "Michelle", "Carol", "Amanda", "Melissa", "Deborah",
-    "Stephanie", "Rebecca", "Sharon", "Laura", "Cynthia", "Kathleen",
-    "Amy", "Angela", "Shirley", "Anna", "Brenda", "Pamela", "Emma",
-    "Nicole", "Helen", "Samantha", "Katherine", "Christine", "Debra",
-    "Rachel", "Carolyn", "Janet", "Catherine", "Maria", "Heather",
+    "Mary",
+    "Patricia",
+    "Jennifer",
+    "Linda",
+    "Barbara",
+    "Elizabeth",
+    "Susan",
+    "Jessica",
+    "Sarah",
+    "Karen",
+    "Lisa",
+    "Nancy",
+    "Betty",
+    "Margaret",
+    "Sandra",
+    "Ashley",
+    "Dorothy",
+    "Kimberly",
+    "Emily",
+    "Donna",
+    "Michelle",
+    "Carol",
+    "Amanda",
+    "Melissa",
+    "Deborah",
+    "Stephanie",
+    "Rebecca",
+    "Sharon",
+    "Laura",
+    "Cynthia",
+    "Kathleen",
+    "Amy",
+    "Angela",
+    "Shirley",
+    "Anna",
+    "Brenda",
+    "Pamela",
+    "Emma",
+    "Nicole",
+    "Helen",
+    "Samantha",
+    "Katherine",
+    "Christine",
+    "Debra",
+    "Rachel",
+    "Carolyn",
+    "Janet",
+    "Catherine",
+    "Maria",
+    "Heather",
 ]
 
 NONBINARY_NAMES = [
-    "Alex", "Jordan", "Taylor", "Morgan", "Casey", "Riley", "Avery",
-    "Quinn", "Peyton", "Skyler", "River", "Sage", "Phoenix", "Reese",
-    "Dakota", "Finley", "Rowan", "Emerson", "Hayden", "Kendall",
-    "Blake", "Cameron", "Drew", "Ellis", "Frankie", "Gray", "Harper",
-    "Indigo", "Jesse", "Kit", "Lane", "Marlowe", "Nova", "Ocean",
-    "Parker", "Remy", "Sloane", "Storm", "Tatum", "Vale",
+    "Alex",
+    "Jordan",
+    "Taylor",
+    "Morgan",
+    "Casey",
+    "Riley",
+    "Avery",
+    "Quinn",
+    "Peyton",
+    "Skyler",
+    "River",
+    "Sage",
+    "Phoenix",
+    "Reese",
+    "Dakota",
+    "Finley",
+    "Rowan",
+    "Emerson",
+    "Hayden",
+    "Kendall",
+    "Blake",
+    "Cameron",
+    "Drew",
+    "Ellis",
+    "Frankie",
+    "Gray",
+    "Harper",
+    "Indigo",
+    "Jesse",
+    "Kit",
+    "Lane",
+    "Marlowe",
+    "Nova",
+    "Ocean",
+    "Parker",
+    "Remy",
+    "Sloane",
+    "Storm",
+    "Tatum",
+    "Vale",
 ]
 
 ABSENT = ""  # sentinel: this field is intentionally omitted from the intake note
@@ -323,37 +440,37 @@ print(f"NB name pool      : {len(NONBINARY_NAMES)} names")
 VARIANTS = [
     {
         "gender_variant": "male",
-        "sex_label":      "Male",
-        "pronoun":        "he/him",
-        "name_pool":      MALE_NAMES,
+        "sex_label": "Male",
+        "pronoun": "he/him",
+        "name_pool": MALE_NAMES,
         "note": "Full male signal: name + pronoun + label",
     },
     {
         "gender_variant": "female",
-        "sex_label":      "Female",
-        "pronoun":        "she/her",
-        "name_pool":      FEMALE_NAMES,
+        "sex_label": "Female",
+        "pronoun": "she/her",
+        "name_pool": FEMALE_NAMES,
         "note": "Full female signal: name + pronoun + label",
     },
     {
         "gender_variant": "nb_full",
-        "sex_label":      "Non-binary",
-        "pronoun":        "they/them",
-        "name_pool":      NONBINARY_NAMES,
+        "sex_label": "Non-binary",
+        "pronoun": "they/them",
+        "name_pool": NONBINARY_NAMES,
         "note": "Full NB signal: neutral name + they/them + Non-binary label",
     },
     {
         "gender_variant": "nb_label_only",
-        "sex_label":      "Non-binary",
-        "pronoun":        ABSENT,
-        "name_pool":      MALE_NAMES,    # male name kept only label changes
+        "sex_label": "Non-binary",
+        "pronoun": ABSENT,
+        "name_pool": MALE_NAMES,  # male name kept only label changes
         "note": "Isolated label: male name, no pronoun, Non-binary label only",
     },
     {
         "gender_variant": "nb_ambiguous",
-        "sex_label":      ABSENT,
-        "pronoun":        ABSENT,
-        "name_pool":      None,          # initials only
+        "sex_label": ABSENT,
+        "pronoun": ABSENT,
+        "name_pool": None,  # initials only
         "note": "Gender absent: initials only, no pronoun, no sex field",
     },
 ]
@@ -368,7 +485,7 @@ CLINICAL_COLS = [
     "o2sat",
     "sbp",
     "dbp",
-    "acuity",            # nurse ESI ground truth baseline
+    "acuity",  # nurse ESI ground truth baseline
     "race",
     "arrival_transport",
     "disposition",
@@ -376,11 +493,14 @@ CLINICAL_COLS = [
 
 print(f"{len(VARIANTS)} variants defined:")
 for v in VARIANTS:
-    print(f"  {v['gender_variant']:<16} sex_label={v['sex_label'] or '[absent]':<12} "
-          f"pronoun={v['pronoun'] or '[absent]'}")
+    print(
+        f"  {v['gender_variant']:<16} sex_label={v['sex_label'] or '[absent]':<12} "
+        f"pronoun={v['pronoun'] or '[absent]'}"
+    )
 
 
 # ── 4. Expand ────────────────────────────────────────────────────────────────
+
 
 def _initials(name: str) -> str:
     """Convert a first name to an initial, e.g. 'James' → 'J.'"""
@@ -402,27 +522,25 @@ def expand(df_in: pd.DataFrame, seed: int = 42) -> pd.DataFrame:
             pool = variant["name_pool"]
 
             if pool is None:
-                patient_name = _initials(base_male_name)   # nb_ambiguous
+                patient_name = _initials(base_male_name)  # nb_ambiguous
             elif pool is MALE_NAMES:
-                patient_name = base_male_name               # male + nb_label_only
+                patient_name = base_male_name  # male + nb_label_only
             elif pool is FEMALE_NAMES:
-                patient_name = base_female_name             # female
+                patient_name = base_female_name  # female
             else:
-                patient_name = base_nb_name                 # nb_full
+                patient_name = base_nb_name  # nb_full
 
             row = {
                 # Quintet metadata
-                "quintet_id":     quintet_id,
+                "quintet_id": quintet_id,
                 "source_stay_id": record["stay_id"],
                 "gender_variant": variant["gender_variant"],
-                "variant_note":   variant["note"],
-
+                "variant_note": variant["note"],
                 # Gender signals injected into the intake note prompt
                 # Empty string means the field is absent from the note
-                "patient_name":   patient_name,
-                "sex_label":      variant["sex_label"],
-                "pronoun":        variant["pronoun"],
-
+                "patient_name": patient_name,
+                "sex_label": variant["sex_label"],
+                "pronoun": variant["pronoun"],
                 # Clinical fields identical across all 5 variants
                 **{col: record[col] for col in CLINICAL_COLS},
             }
@@ -436,7 +554,9 @@ df_males = pd.read_csv(INPUT_PATH)
 df_quintets = expand(df_males, seed=SEED)
 
 print(f"Input rows  : {len(df_males)}")
-print(f"Output rows : {len(df_quintets)}  ({len(df_males)} stays × {len(VARIANTS)} variants)")
+print(
+    f"Output rows : {len(df_quintets)}  ({len(df_males)} stays × {len(VARIANTS)} variants)"
+)
 
 
 # ── 5. Inspect a sample quintet ─────────────────────────────────────────────
@@ -445,8 +565,15 @@ print(f"Output rows : {len(df_quintets)}  ({len(df_males)} stays × {len(VARIANT
 # only in patient_name, sex_label, and pronoun.
 
 display_cols = [
-    "gender_variant", "patient_name", "sex_label", "pronoun",
-    "chiefcomplaint", "heartrate", "sbp", "pain", "acuity"
+    "gender_variant",
+    "patient_name",
+    "sex_label",
+    "pronoun",
+    "chiefcomplaint",
+    "heartrate",
+    "sbp",
+    "pain",
+    "acuity",
 ]
 
 print("Sample quintet (quintet_id = 0):")
@@ -470,7 +597,9 @@ if violations:
         print(f"  triplet {v['quintet_id']}: {v['column']}")
 else:
     print("PASS - all clinical fields are identical within every quintet.")
-    print(f"       {df_quintets['quintet_id'].nunique()} quintets × {len(CLINICAL_COLS)} fields checked.")
+    print(
+        f"       {df_quintets['quintet_id'].nunique()} quintets × {len(CLINICAL_COLS)} fields checked."
+    )
 
 
 # ── 7. Summary statistics ───────────────────────────────────────────────────
@@ -483,15 +612,20 @@ print(f"  Source male stays    : {n_stays}")
 print(f"  Variants per stay    : {n_variants}")
 print(f"  Total rows (×{n_variants})      : {len(df_quintets)}")
 
-print(f"\n  Rows per variant:")
+print("\n  Rows per variant:")
 counts = df_quintets["gender_variant"].value_counts()
 order = ["male", "female", "nb_full", "nb_label_only", "nb_ambiguous"]
 for v in order:
     note = next(x["note"] for x in VARIANTS if x["gender_variant"] == v)
     print(f"    {v:<16} {counts[v]} {note}")
 
-print(f"\n  Acuity distribution (ground truth identical across all variants):")
-for level, cnt in df_quintets[df_quintets["gender_variant"] == "male"]["acuity"].value_counts().sort_index().items():
+print("\n  Acuity distribution (ground truth identical across all variants):")
+for level, cnt in (
+    df_quintets[df_quintets["gender_variant"] == "male"]["acuity"]
+    .value_counts()
+    .sort_index()
+    .items()
+):
     print(f"    ESI {int(level)} : {cnt}")
 
 

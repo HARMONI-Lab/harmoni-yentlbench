@@ -130,7 +130,9 @@ def decompose_sex_info_effect(
         presence_effect = labeled_mean - baseline
         stats["L1_presence_mean_effect"] = float(np.mean(presence_effect))
         stats["L1_presence_abs_mean_effect"] = float(np.mean(np.abs(presence_effect)))
-        stats["L1_presence_pct_changed"] = float(np.mean(np.abs(presence_effect) > 0.01))
+        stats["L1_presence_pct_changed"] = float(
+            np.mean(np.abs(presence_effect) > 0.01)
+        )
 
         nonzero = presence_effect[np.abs(presence_effect) > 0.01]
         if len(nonzero) >= 10:
@@ -142,7 +144,9 @@ def decompose_sex_info_effect(
         else:
             stats["L1_wilcoxon_p"] = None
 
-        labeled_accs = [accuracy_score(y_true, predictions[v]) for v in available_labeled]
+        labeled_accs = [
+            accuracy_score(y_true, predictions[v]) for v in available_labeled
+        ]
         stats["L1_accuracy_with_sex_info"] = float(np.mean(labeled_accs))
         stats["L1_accuracy_without_sex_info"] = baseline_acc
         stats["L1_accuracy_delta"] = float(np.mean(labeled_accs) - baseline_acc)
@@ -169,7 +173,9 @@ def decompose_sex_info_effect(
         else:
             stats["L2_wilcoxon_p"] = None
 
-        binary_acc = np.mean([accuracy_score(y_true, predictions[v]) for v in available_binary])
+        binary_acc = np.mean(
+            [accuracy_score(y_true, predictions[v]) for v in available_binary]
+        )
         nb_acc = accuracy_score(y_true, predictions[VARIANT_NONBINARY])
         stats["L2_accuracy_binary"] = float(binary_acc)
         stats["L2_accuracy_nonbinary"] = float(nb_acc)
@@ -208,7 +214,9 @@ def decompose_sex_info_effect(
             if mask.sum() > 0:
                 ld = gender_diff[mask]
                 stats[f"L3_female_vs_male_esi{level}_mean"] = float(np.mean(ld))
-                stats[f"L3_female_vs_male_esi{level}_pct_diff"] = float(np.mean(ld != 0))
+                stats[f"L3_female_vs_male_esi{level}_pct_diff"] = float(
+                    np.mean(ld != 0)
+                )
 
     # LAYER 4: Non-binary token
     if has[VARIANT_NONBINARY]:
@@ -256,6 +264,7 @@ def decompose_sex_info_effect(
 
     return stats
 
+
 def compute_transition_matrices(
     predictions: Dict[str, np.ndarray],
 ) -> Dict[str, pd.DataFrame]:
@@ -296,15 +305,19 @@ def analyze_transition_risk(
                     continue
                 shift = to_esi - from_esi
                 row_total = matrix.loc[from_esi].sum()
-                abs_shift = abs(shift)
+                abs(shift)
 
-                transitions.append({
-                    "sex_label": variant,
-                    "baseline_esi": from_esi,
-                    "shifted_esi": to_esi,
-                    "shift": shift,
-                    "count": count,
-                    "pct_of_baseline_esi": float(count / row_total) if row_total > 0 else 0.0,
-                    "pct_of_total": float(count / total),
-                })
+                transitions.append(
+                    {
+                        "sex_label": variant,
+                        "baseline_esi": from_esi,
+                        "shifted_esi": to_esi,
+                        "shift": shift,
+                        "count": count,
+                        "pct_of_baseline_esi": (
+                            float(count / row_total) if row_total > 0 else 0.0
+                        ),
+                        "pct_of_total": float(count / total),
+                    }
+                )
     return transitions

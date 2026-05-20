@@ -80,9 +80,7 @@ def analyze_all_pairs(
         else:
             mn_p = 1.0
 
-        cohens_h = float(
-            2 * np.arcsin(np.sqrt(acc_a)) - 2 * np.arcsin(np.sqrt(acc_b))
-        )
+        cohens_h = float(2 * np.arcsin(np.sqrt(acc_a)) - 2 * np.arcsin(np.sqrt(acc_b)))
 
         # Cramer's V for predictions
         ct = pd.crosstab(pa, pb)
@@ -90,24 +88,30 @@ def analyze_all_pairs(
             chi2_ct, _, _, _ = scipy_stats.chi2_contingency(ct)
             n_val = len(pa)
             k_val = min(ct.shape) - 1
-            cramers_v = float(np.sqrt(chi2_ct / (n_val * k_val))) if k_val > 0 and n_val > 0 else 0.0
+            cramers_v = (
+                float(np.sqrt(chi2_ct / (n_val * k_val)))
+                if k_val > 0 and n_val > 0
+                else 0.0
+            )
         else:
             cramers_v = 0.0
 
-        rows.append({
-            "variant_a": v_a,
-            "variant_b": v_b,
-            "agreement_rate": float(np.mean(pa == pb)),
-            "mean_signed_diff": float(np.mean(diff)),
-            "mean_abs_diff": float(np.mean(np.abs(diff))),
-            "pct_differ": float(np.mean(diff != 0)),
-            "accuracy_a": acc_a,
-            "accuracy_b": acc_b,
-            "accuracy_delta": acc_b - acc_a,
-            "mcnemar_p": mn_p,
-            "n_discordant": n_disc,
-            "cohens_h": cohens_h,
-            "cramers_v": cramers_v,
-        })
+        rows.append(
+            {
+                "variant_a": v_a,
+                "variant_b": v_b,
+                "agreement_rate": float(np.mean(pa == pb)),
+                "mean_signed_diff": float(np.mean(diff)),
+                "mean_abs_diff": float(np.mean(np.abs(diff))),
+                "pct_differ": float(np.mean(diff != 0)),
+                "accuracy_a": acc_a,
+                "accuracy_b": acc_b,
+                "accuracy_delta": acc_b - acc_a,
+                "mcnemar_p": mn_p,
+                "n_discordant": n_disc,
+                "cohens_h": cohens_h,
+                "cramers_v": cramers_v,
+            }
+        )
 
     return rows

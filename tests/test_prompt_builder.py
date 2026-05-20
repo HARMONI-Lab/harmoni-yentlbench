@@ -1,6 +1,6 @@
-import pytest
 from yentlbench.local_runner.prompt import build_prompt
 from yentlbench.merge_runs import normalize_prompt, hash_prompt
+
 
 def test_build_prompt_variants():
     base_vignette = {
@@ -11,7 +11,7 @@ def test_build_prompt_variants():
         "sbp": 121,
         "dbp": 78,
         "temperature": 98.6,
-        "pain": 2
+        "pain": 2,
     }
 
     # 1. Output contains the "Chief complaint:" marker
@@ -23,10 +23,10 @@ def test_build_prompt_variants():
     # Create two vignettes identical in everything except the sex_label
     v_male = {**base_vignette, "sex_label": "Male"}
     v_female = {**base_vignette, "sex_label": "Female"}
-    
+
     p_male = build_prompt(v_male, "male")
     p_female = build_prompt(v_female, "female")
-    
+
     # Assert they differ strictly by the words 'Male' and 'Female'
     assert p_male.replace("Sex: Male", "Sex: Female") == p_female
 
@@ -42,15 +42,33 @@ def test_build_prompt_variants():
 
     # 5. All four variants produce identical SHA-256 hash of the clinical content after the strip step
     # We will construct full variants as they'd appear in the real dataset to ensure robust hashing
-    v_full_male = {**base_vignette, "patient_name": "Samuel", "sex_label": "Male", "pronoun": "he/him"}
-    v_full_female = {**base_vignette, "patient_name": "Jessica", "sex_label": "Female", "pronoun": "she/her"}
+    v_full_male = {
+        **base_vignette,
+        "patient_name": "Samuel",
+        "sex_label": "Male",
+        "pronoun": "he/him",
+    }
+    v_full_female = {
+        **base_vignette,
+        "patient_name": "Jessica",
+        "sex_label": "Female",
+        "pronoun": "she/her",
+    }
     v_full_nb_ambig = {**base_vignette, "patient_name": "S."}
-    v_full_nb_label = {**base_vignette, "patient_name": "Samuel", "sex_label": "Non-binary"}
+    v_full_nb_label = {
+        **base_vignette,
+        "patient_name": "Samuel",
+        "sex_label": "Non-binary",
+    }
 
     hash_male = hash_prompt(normalize_prompt(build_prompt(v_full_male, "male")))
     hash_female = hash_prompt(normalize_prompt(build_prompt(v_full_female, "female")))
-    hash_nb_ambig = hash_prompt(normalize_prompt(build_prompt(v_full_nb_ambig, "nb_ambiguous")))
-    hash_nb_label = hash_prompt(normalize_prompt(build_prompt(v_full_nb_label, "nb_label_only")))
+    hash_nb_ambig = hash_prompt(
+        normalize_prompt(build_prompt(v_full_nb_ambig, "nb_ambiguous"))
+    )
+    hash_nb_label = hash_prompt(
+        normalize_prompt(build_prompt(v_full_nb_label, "nb_label_only"))
+    )
 
     assert hash_male == hash_female
     assert hash_female == hash_nb_ambig

@@ -35,9 +35,7 @@ def load_merged_data(input_path: str) -> pd.DataFrame:
         logger.error("'actual_score' column not found")
         sys.exit(1)
 
-    pred_cols = sorted(
-        [c for c in df.columns if c.startswith("predicted_score__")]
-    )
+    pred_cols = sorted([c for c in df.columns if c.startswith("predicted_score__")])
     if not pred_cols:
         logger.error("No predicted_score__ columns found")
         sys.exit(1)
