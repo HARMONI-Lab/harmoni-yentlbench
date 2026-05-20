@@ -31,8 +31,40 @@ def run_prepare(args):
     subprocess.run(["python3", "-m", "yentlbench.dataset_prep"])
 
 def run_run(args):
-    print("Local LLM runner is not yet implemented (Milestone 2).")
-    sys.exit(1)
+    from yentlbench.local_runner.ollama_runner import OllamaRunner, OllamaNotRunningError
+    
+    if args.list_models:
+        runner = OllamaRunner(model_name="", host=args.host)
+        try:
+            models = runner.list_models()
+            print("Available Ollama models:")
+            for m in models:
+                print(f"  - {m}")
+        except OllamaNotRunningError as e:
+            print(f"Error: {e}")
+        sys.exit(0)
+        
+    if not args.model or not args.variant:
+        print("Error: --model and --variant are required unless --list-models is used.")
+        sys.exit(1)
+        
+    dataset_path = "eval/dataset_quintets.csv"
+    if not os.path.exists(dataset_path):
+        print(f"Error: {dataset_path} not found. Run 'prepare' first.")
+        sys.exit(1)
+        
+    df = pd.read_csv(dataset_path)
+    # Filter rows with NaN in acuity
+    df = df[df["acuity"].notna()]
+    vignettes = df.to_dict(orient="records")
+    
+    runner = OllamaRunner(model_name=args.model, host=args.host)
+    try:
+        runner.run(vignettes, args.variant, run_number=args.run_number, output_dir=args.output_dir)
+    except OllamaNotRunningError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
 
 def run_merge(args):
     # merge_runs.py expects argv: [prog, --results-dir, ..., --output, ...]
@@ -67,6 +99,12 @@ def main():
 
     # Run
     run_p = subparsers.add_parser("run", help="Run local LLM evaluations")
+    run_p.add_argument("--model", required=False, help="Ollama model name (e.g. llama3:8b)")
+    run_p.add_argument("--variant", required=False, choices=["nb_ambiguous", "female", "male", "nb_label_only"], help="Target variant to run")
+    run_p.add_argument("--host", default="http://localhost:11434", help="Ollama host url")
+    run_p.add_argument("--run-number", type=int, default=1, help="Run number to append to filename")
+    run_p.add_argument("--output-dir", default="results", help="Directory to save .run.json files")
+    run_p.add_argument("--list-models", action="store_true", help="List available Ollama models")
 
     # Merge
     merge_p = subparsers.add_parser("merge", help="Merge run results")
