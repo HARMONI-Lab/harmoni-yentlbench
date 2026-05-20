@@ -250,7 +250,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     logger.info("Saved cross-model report to '%s'", cross_model_report_path)
 
     save_cross_model_results(all_results, args.output_dir)
-    generate_cross_model_visuals(all_results, args.output_dir)
+    generate_cross_model_visuals(all_results, args.output_dir, args.input)
 
 
 if __name__ == "__main__":

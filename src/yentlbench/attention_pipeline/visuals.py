@@ -35,14 +35,17 @@ def get_model_family(model_name: str) -> str:
 
 def generate_visuals(result: Dict[str, Any], output_dir: str) -> None:
     """
-    Generate plots and heatmaps based on the analysis results.
-    Currently empty, to be implemented later.
+    Generate plots and heatmaps for a single model based on the analysis results.
+    
+    INTENTIONAL NO-OP: Per-model visualizations are currently disabled.
+    All visualization logic has been centralized in `generate_cross_model_visuals`
+    which produces comparative charts (8+ types) across all evaluated models.
     """
     pass
 
 
 def generate_cross_model_visuals(
-    all_results: List[Dict[str, Any]], output_dir: str
+    all_results: List[Dict[str, Any]], output_dir: str, merged_csv_path: str = "eval/merged_evaluations.csv"
 ) -> None:
     """
     Generate plots comparing all models.
@@ -620,7 +623,7 @@ def generate_cross_model_visuals(
     try:
         # We need the raw predictions to build arbitrary pairwise confusion matrices.
         # Let's aggregate them across all models.
-        raw_df = pd.read_csv("eval/merged_evaluations.csv")
+        raw_df = pd.read_csv(merged_csv_path)
 
         # We want three specific pairwise comparisons:
         # 1. Female (Y) vs Male (X)
@@ -843,30 +846,40 @@ def generate_cross_model_visuals(
 
     # 11. Counterfactual Vignette Example Panels (15 Cases)
     try:
-        raw_df = pd.read_csv("eval/merged_evaluations.csv")
+        raw_df = pd.read_csv(merged_csv_path)
         import matplotlib.patches as patches
+        from yentlbench.config import BASELINE_VARIANT, LABELED_VARIANTS
 
         target_hashes = []
 
-        # 1. We know from analysis that GPT-5.4-nano has a 2->5 failure. Let's find it.
-        nano_col_f = "predicted_score__female__openai_gpt-5.4-nano-2026-03-17"
-        nano_col_bl = "predicted_score__nb_ambiguous__openai_gpt-5.4-nano-2026-03-17"
-
-        if nano_col_f in raw_df.columns and nano_col_bl in raw_df.columns:
-            fail_cases = raw_df[
-                (raw_df[nano_col_bl] == 2)
-                & ((raw_df[nano_col_f] == 5) | (raw_df[nano_col_f] == 4))
-            ]
-            if not fail_cases.empty:
-                fail_cases = fail_cases.copy()
-                fail_cases.loc[:, "diff"] = abs(
-                    fail_cases[nano_col_bl] - fail_cases[nano_col_f]
-                )
-                target_hashes.append(
-                    fail_cases.sort_values("diff", ascending=False).iloc[0][
-                        "prompt_hash"
+        # 1. Dynamically find an extreme failure (e.g., predicted 2 in baseline, but 4 or 5 in a labeled variant) across any model.
+        pred_cols = [c for c in raw_df.columns if c.startswith("predicted_score__")]
+        models_in_df = set()
+        for c in pred_cols:
+            parts = c.split("__")
+            if len(parts) >= 3:
+                models_in_df.add(parts[2])
+                
+        for model in models_in_df:
+            col_bl = f"predicted_score__{BASELINE_VARIANT}__{model}"
+            if col_bl not in raw_df.columns:
+                continue
+            
+            for variant in LABELED_VARIANTS:
+                col_v = f"predicted_score__{variant}__{model}"
+                if col_v in raw_df.columns:
+                    fail_cases = raw_df[
+                        (raw_df[col_bl] == 2) & ((raw_df[col_v] == 5) | (raw_df[col_v] == 4))
                     ]
-                )
+                    if not fail_cases.empty:
+                        fail_cases = fail_cases.copy()
+                        fail_cases.loc[:, "diff"] = abs(fail_cases[col_bl] - fail_cases[col_v])
+                        top_hash = fail_cases.sort_values("diff", ascending=False).iloc[0]["prompt_hash"]
+                        if top_hash not in target_hashes:
+                            target_hashes.append(top_hash)
+                            break
+            if target_hashes:
+                break
 
         # 2. Find the vignettes with the highest average prediction range across all models
         vig_ranges = {}

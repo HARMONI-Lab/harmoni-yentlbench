@@ -319,7 +319,8 @@ def compute_confidence_interval(
         try:
             score = metric_fn(y_true[idx], y_pred[idx])
             scores.append(score)
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Bootstrap iteration failed with {type(e).__name__}: {e}")
             continue
 
     if not scores:

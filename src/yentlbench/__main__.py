@@ -15,19 +15,8 @@ def check_artifact(path: str, stage_name: str):
 
 
 def run_prepare(args):
-    # dataset_prep.py is a scripted process, not a function.
-    # However, we can wrap the logic.
-    # dataset_prep.py runs logic at top level; for a proper entrypoint,
-    # we would want to wrap it in a function. Since the user said
-    # "nothing about the logic changes", we will call it as a script
-    # or manually trigger the parts we can.
-    # Actually, dataset_prep.py was written as a script.
-    # I'll import the logic and call whatever is available or use bash.
-    # Better: since I can't change logic, I'll use os.system or subprocess
-    # but for 'prepare', it doesn't have args.
-    import subprocess
-
-    subprocess.run(["python3", "-m", "yentlbench.dataset_prep"])
+    from yentlbench.dataset_prep import main as prep_main
+    prep_main()
 
 
 def run_run(args):

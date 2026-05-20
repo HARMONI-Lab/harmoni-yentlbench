@@ -73,24 +73,46 @@ class OllamaRunner:
             print(f"Expected output file: {out_path}")
             return out_path
 
-        if os.path.exists(out_path):
-            print(
-                f"[{self.model_name}] Run {run_number} for variant '{target_variant}' already exists. Skipping."
-            )
-            return out_path
-
         self.health_check()
-
         os.makedirs(output_dir, exist_ok=True)
 
         subruns = []
+        completed_prompts = set()
 
-        for vignette in vignettes:
-            # Only process matching variant
-            if vignette.get("gender_variant") != target_variant:
+        if os.path.exists(out_path):
+            try:
+                with open(out_path, "r", encoding="utf-8") as f:
+                    existing_data = json.load(f)
+                    subruns = existing_data.get("subruns", [])
+                    # Extract prompts that have already been evaluated
+                    for sr in subruns:
+                        try:
+                            prompt = sr["conversations"][0]["requests"][0]["contents"][0]["parts"][0]["text"]
+                            completed_prompts.add(prompt)
+                        except (KeyError, IndexError):
+                            pass
+                
+                if len(completed_prompts) == len(matching_vignettes):
+                    print(
+                        f"[{self.model_name}] Run {run_number} for variant '{target_variant}' already fully exists. Skipping."
+                    )
+                    return out_path
+                else:
+                    print(
+                        f"[{self.model_name}] Resuming Run {run_number} for variant '{target_variant}' "
+                        f"({len(completed_prompts)}/{len(matching_vignettes)} completed)."
+                    )
+            except (json.JSONDecodeError, KeyError):
+                print(f"Warning: Failed to parse existing run file at {out_path}. Starting fresh.")
+                subruns = []
+
+        for vignette in matching_vignettes:
+            prompt_text = build_prompt(vignette, target_variant)
+            
+            # Row-level resume check
+            if prompt_text in completed_prompts:
                 continue
 
-            prompt_text = build_prompt(vignette, target_variant)
             run_id = str(uuid.uuid4())
             start_time = datetime.now(timezone.utc).isoformat()
 
@@ -166,9 +188,10 @@ class OllamaRunner:
             }
             subruns.append(subrun)
 
-        output_data = {"subruns": subruns}
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(output_data, f, indent=2)
+            # Checkpoint continuously
+            output_data = {"subruns": subruns}
+            with open(out_path, "w", encoding="utf-8") as f:
+                json.dump(output_data, f, indent=2)
 
         print(
             f"[{self.model_name}] Completed {len(subruns)} evaluations for variant '{target_variant}'."

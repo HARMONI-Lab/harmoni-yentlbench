@@ -51,229 +51,9 @@ from pathlib import Path
 # PART 1: Dataset Preparation
 # =============================================================================
 
-# ── 1. Setup ─────────────────────────────────────────────────────────────────
 
 DATA_DIR = Path("mimic-iv-ed-demo-2.2/ed")
 OUTPUT_DIR = Path("./dataset_output")
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-print(f"Data directory : {DATA_DIR}")
-print(f"Output directory: {OUTPUT_DIR}")
-print(f"Data dir exists : {DATA_DIR.exists()}")
-
-
-# ── 2. Load tables ───────────────────────────────────────────────────────────
-
-edstays = pd.read_csv(DATA_DIR / "edstays.csv")
-triage = pd.read_csv(DATA_DIR / "triage.csv")
-
-print("edstays shape :", edstays.shape)
-print("triage shape  :", triage.shape)
-
-# Preview edstays
-print("edstays columns:", list(edstays.columns))
-print(edstays.head(3))
-
-# Preview triage
-print("triage columns:", list(triage.columns))
-print(triage.head(3))
-
-
-# ── 3. Join ──────────────────────────────────────────────────────────────────
-
-df = edstays.merge(triage, on=["subject_id", "stay_id"], how="inner")
-
-print(f"Rows after join : {len(df)}")
-print(f"Columns         : {list(df.columns)}")
-
-
-# ── 4. Clean & reorder ──────────────────────────────────────────────────────
-
-# Pain is 0-10 but occasionally contains the string 'unable'
-# Coerce to numeric, 'unable' becomes NaN
-df["pain"] = pd.to_numeric(df["pain"], errors="coerce")
-
-print("Pain value counts (top 10):")
-print(df["pain"].value_counts().head(10))
-
-df = df[
-    [
-        "subject_id",
-        "stay_id",
-        # Demographics from edstays
-        "gender",
-        "race",
-        "arrival_transport",
-        "disposition",
-        "intime",
-        "outtime",
-        # Triage snapshot from triage
-        "chiefcomplaint",
-        "pain",
-        "temperature",
-        "heartrate",
-        "resprate",
-        "o2sat",
-        "sbp",
-        "dbp",
-        # Target
-        "acuity",
-    ]
-]
-
-print(df.head(3))
-
-
-# ── 5. Filter male only ───────────────────────────────────────────────────
-
-# We seed exclusively from male records to eliminate nurse gender bias from our
-# ground truth. Female and non-binary variants will be constructed synthetically
-# in the expansion step.
-
-print("Gender distribution (full dataset):")
-print(df["gender"].value_counts())
-
-df = df[df["gender"] == "M"].copy()
-print(f"\nRows after male filter: {len(df)}")
-
-
-# ── 6. Drop unusable rows ───────────────────────────────────────────────────
-
-# Drop 1: missing acuity
-# No nurse ESI score = no ground truth baseline = unusable for benchmark
-
-n_before = len(df)
-missing_acuity = df["acuity"].isna()
-df = df[~missing_acuity].copy()
-
-print(f"Dropped (missing acuity) : {missing_acuity.sum()} rows")
-print(f"Remaining                : {len(df)} rows")
-
-# Drop 2: all core vitals missing
-# These patients bypassed triage entirely (e.g. arrived in cardiac arrest)
-# and have no triage snapshot to present to the LLM.
-# Note: rows missing only SOME vitals are kept.
-
-CORE_VITALS = ["heartrate", "resprate", "o2sat", "sbp", "dbp"]
-all_vitals_missing = df[CORE_VITALS].isna().all(axis=1)
-
-print("Bypassed-triage cases being dropped:")
-dropped = df[all_vitals_missing][["stay_id", "chiefcomplaint"]]
-print(dropped.to_string(index=False))
-
-df = df[~all_vitals_missing].copy()
-print(f"\nDropped (all vitals NaN) : {all_vitals_missing.sum()} rows")
-print(f"Remaining                : {len(df)} rows")
-
-
-# ── 9. Filter quintets → curated benchmark set ───────────────────────────────
-# Exclude chief complaints where sex is a legitimate clinical variable for
-# triage acuity i.e., cases where differential ESI scoring by gender could
-# reflect appropriate clinical reasoning rather than bias.
-#
-# Abdominal pain (15 cases): the female differential is materially broader
-# (ovarian torsion, ectopic pregnancy, PID) and changes acuity in ways that
-# are clinically justified, not biased. Using male ESI scores as ground truth
-# for these cases would produce uninterpretable false positives.
-#
-# RIGHT FOOT INFECTION (1 case): diabetic foot infection severity and
-# progression differ by sex; differential scoring is not cleanly attributable
-# to bias.
-#
-# Abnormal labs, Hyperglycemia (1 case): hyperglycemia workup has sex-specific
-# hormonal considerations that legitimately affect acuity assessment.
-#
-# Scope of the resulting benchmark: bias detection in complaints where sex
-# carries no legitimate clinical weight on triage acuity - chest pain,
-# extremity injuries, respiratory complaints, altered mental status, etc.
-# This is a stronger causal claim than a general bias study precisely because
-# the design is clean.
-
-EXCLUDED_SOURCE_STAYS = {
-    37593892,  # DISLODGED ABD TUBE
-    38875576,  # Abd pain, n/v/d
-    32204198,  # Abd pain
-    30804580,  # Abd pain, N/V
-    31806264,  # Abd pain, Right sided abdominal pain
-    32537287,  # Abd pain, Diarrhea, Vomiting
-    31023359,  # Abd pain, N/V
-    30225689,  # Right sided abdominal pain
-    32281632,  # Abd pain
-    35681380,  # RLQ abdominal pain
-    37714209,  # ABDOMINAL MASS, FEVER
-    31960365,  # ABD PAIN
-    38566596,  # RIGHT FOOT INFECTION
-    38133986,  # Abnormal labs, Hyperglycemia
-    36200931,  # Abd pain
-    30390242,  # Abd pain, Back pain
-    34617920,  # Abd pain, Dysuria
-}
-
-n_before = len(df)
-df = df[~df["stay_id"].isin(EXCLUDED_SOURCE_STAYS)].copy()
-print(f"Dropped (confounders) : {n_before - len(df)} rows  ")
-print(f"Remaining             : {len(df)} rows ({df['stay_id'].nunique()})")
-
-# ── Cast vitals to int (whole-number measurements) ────────────────────────────
-INT_VITAL_COLS = ["heartrate", "resprate", "o2sat", "sbp", "dbp", "acuity"]
-df[INT_VITAL_COLS] = df[INT_VITAL_COLS].astype("Int64")  # nullable int
-
-# ── 8. Summary ───────────────────────────────────────────────────────────────
-
-df = df.reset_index(drop=True)
-
-print("── Final dataset summary ────────────────────────────")
-print(f"  Rows            : {len(df)}")
-print(f"  Unique patients : {df['subject_id'].nunique()}")
-print(f"  Stays/patient   : {len(df) / df['subject_id'].nunique():.1f} avg")
-
-print("\n  Acuity (ESI) distribution:")
-for val, cnt in df["acuity"].value_counts().sort_index().items():
-    print(f"    ESI {int(val)} : {cnt}")
-
-print("\n  Remaining missing values (partial, still usable):")
-nulls = df.isnull().sum()
-nulls = nulls[nulls > 0]
-if nulls.empty:
-    print("    none")
-else:
-    for col, n in nulls.items():
-        print(f"    {col:<16} {n}")
-
-# ── 9. Export ────────────────────────────────────────────────────────────────
-
-out_path = OUTPUT_DIR / "dataset_males.csv"
-df.to_csv(out_path, index=False)
-print(f"Saved {len(df)} rows to {out_path}")
-print(df.head(5))
-
-
-# =============================================================================
-# PART 2: Gender Quintet Expansion
-# =============================================================================
-
-# ── 1. Setup ─────────────────────────────────────────────────────────────────
-
-INPUT_PATH = OUTPUT_DIR / "dataset_males.csv"
-# OUTPUT_DIR already set above
-
-# Fallback for local development or alternate workspace layouts
-if not INPUT_PATH.exists():
-    INPUT_PATH = Path("dataset_males.csv")
-
-SEED = 42  # change for alternative name draws (results must be reproducible)
-
-print(f"Input  : {INPUT_PATH}")
-print(f"Output : {OUTPUT_DIR}")
-print(f"Seed   : {SEED}")
-
-
-# ── 2. Name pools ───────────────────────────────────────────────────────────
-
-# Three pools of common US first names one per binary gender, one gender-neutral.
-# Names are sampled randomly but reproducibly (controlled by SEED). Using names
-# rather than placeholders makes the intake note feel realistic and ensures the
-# LLM processes gender the way it would in a real clinical note.
 
 MALE_NAMES = [
     "James",
@@ -426,9 +206,7 @@ NONBINARY_NAMES = [
 
 ABSENT = ""  # sentinel: this field is intentionally omitted from the intake note
 
-print(f"Male name pool    : {len(MALE_NAMES)} names")
-print(f"Female name pool  : {len(FEMALE_NAMES)} names")
-print(f"NB name pool      : {len(NONBINARY_NAMES)} names")
+
 
 
 # ── 3. Variant definitions ──────────────────────────────────────────────────
@@ -491,12 +269,7 @@ CLINICAL_COLS = [
     "disposition",
 ]
 
-print(f"{len(VARIANTS)} variants defined:")
-for v in VARIANTS:
-    print(
-        f"  {v['gender_variant']:<16} sex_label={v['sex_label'] or '[absent]':<12} "
-        f"pronoun={v['pronoun'] or '[absent]'}"
-    )
+
 
 
 # ── 4. Expand ────────────────────────────────────────────────────────────────
@@ -549,89 +322,314 @@ def expand(df_in: pd.DataFrame, seed: int = 42) -> pd.DataFrame:
     return pd.DataFrame(rows).reset_index(drop=True)
 
 
-# Run
-df_males = pd.read_csv(INPUT_PATH)
-df_quintets = expand(df_males, seed=SEED)
+def main():
+    print(f"Male name pool    : {len(MALE_NAMES)} names")
+    print(f"Female name pool  : {len(FEMALE_NAMES)} names")
+    print(f"NB name pool      : {len(NONBINARY_NAMES)} names")
+    print(f"{len(VARIANTS)} variants defined:")
+    for v in VARIANTS:
+        print(
+            f"  {v['gender_variant']:<16} sex_label={v['sex_label'] or '[absent]':<12} "
+            f"pronoun={v['pronoun'] or '[absent]'}"
+        )
 
-print(f"Input rows  : {len(df_males)}")
-print(
-    f"Output rows : {len(df_quintets)}  ({len(df_males)} stays × {len(VARIANTS)} variants)"
-)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# ── 5. Inspect a sample quintet ─────────────────────────────────────────────
+    print(f"Data directory : {DATA_DIR}")
+    print(f"Output directory: {OUTPUT_DIR}")
+    print(f"Data dir exists : {DATA_DIR.exists()}")
 
-# All 5 rows of quintet_id = 0 should have identical clinical fields and differ
-# only in patient_name, sex_label, and pronoun.
+    # ── 2. Load tables ───────────────────────────────────────────────────────────
 
-display_cols = [
-    "gender_variant",
-    "patient_name",
-    "sex_label",
-    "pronoun",
-    "chiefcomplaint",
-    "heartrate",
-    "sbp",
-    "pain",
-    "acuity",
-]
+    edstays = pd.read_csv(DATA_DIR / "edstays.csv")
+    triage = pd.read_csv(DATA_DIR / "triage.csv")
 
-print("Sample quintet (quintet_id = 0):")
-print(df_quintets[df_quintets["quintet_id"] == 0][display_cols])
+    print("edstays shape :", edstays.shape)
+    print("triage shape  :", triage.shape)
 
+    # Preview edstays
+    print("edstays columns:", list(edstays.columns))
+    print(edstays.head(3))
 
-# ── 6. Verify clinical fields are identical within each quintet ────────────
+    # Preview triage
+    print("triage columns:", list(triage.columns))
+    print(triage.head(3))
 
-# This is the core methodological guarantee: if any clinical field varies within
-# a quintet, the bias measurement is confounded.
+    # ── 3. Join ──────────────────────────────────────────────────────────────────
 
-violations = []
-for qid, group in df_quintets.groupby("quintet_id"):
-    for col in CLINICAL_COLS:
-        if group[col].nunique(dropna=False) > 1:
-            violations.append({"quintet_id": qid, "column": col})
+    df = edstays.merge(triage, on=["subject_id", "stay_id"], how="inner")
 
-if violations:
-    print(f"FAIL - {len(violations)} clinical field variation(s) found:")
-    for v in violations:
-        print(f"  triplet {v['quintet_id']}: {v['column']}")
-else:
-    print("PASS - all clinical fields are identical within every quintet.")
+    print(f"Rows after join : {len(df)}")
+    print(f"Columns         : {list(df.columns)}")
+
+    # ── 4. Clean & reorder ──────────────────────────────────────────────────────
+
+    # Pain is 0-10 but occasionally contains the string 'unable'
+    # Coerce to numeric, 'unable' becomes NaN
+    df["pain"] = pd.to_numeric(df["pain"], errors="coerce")
+
+    print("Pain value counts (top 10):")
+    print(df["pain"].value_counts().head(10))
+
+    df = df[
+        [
+            "subject_id",
+            "stay_id",
+            # Demographics from edstays
+            "gender",
+            "race",
+            "arrival_transport",
+            "disposition",
+            "intime",
+            "outtime",
+            # Triage snapshot from triage
+            "chiefcomplaint",
+            "pain",
+            "temperature",
+            "heartrate",
+            "resprate",
+            "o2sat",
+            "sbp",
+            "dbp",
+            # Target
+            "acuity",
+        ]
+    ]
+
+    print(df.head(3))
+
+    # ── 5. Filter male only ───────────────────────────────────────────────────
+
+    # We seed exclusively from male records to eliminate nurse gender bias from our
+    # ground truth. Female and non-binary variants will be constructed synthetically
+    # in the expansion step.
+
+    print("Gender distribution (full dataset):")
+    print(df["gender"].value_counts())
+
+    df = df[df["gender"] == "M"].copy()
+    print(f"\nRows after male filter: {len(df)}")
+
+    # ── 6. Drop unusable rows ───────────────────────────────────────────────────
+
+    # Drop 1: missing acuity
+    # No nurse ESI score = no ground truth baseline = unusable for benchmark
+
+    n_before = len(df)
+    missing_acuity = df["acuity"].isna()
+    df = df[~missing_acuity].copy()
+
+    print(f"Dropped (missing acuity) : {missing_acuity.sum()} rows")
+    print(f"Remaining                : {len(df)} rows")
+
+    # Drop 2: all core vitals missing
+    # These patients bypassed triage entirely (e.g. arrived in cardiac arrest)
+    # and have no triage snapshot to present to the LLM.
+    # Note: rows missing only SOME vitals are kept.
+
+    CORE_VITALS = ["heartrate", "resprate", "o2sat", "sbp", "dbp"]
+    all_vitals_missing = df[CORE_VITALS].isna().all(axis=1)
+
+    print("Bypassed-triage cases being dropped:")
+    dropped = df[all_vitals_missing][["stay_id", "chiefcomplaint"]]
+    print(dropped.to_string(index=False))
+
+    df = df[~all_vitals_missing].copy()
+    print(f"\nDropped (all vitals NaN) : {all_vitals_missing.sum()} rows")
+    print(f"Remaining                : {len(df)} rows")
+
+    # ── 9. Filter quintets → curated benchmark set ───────────────────────────────
+    # Exclude chief complaints where sex is a legitimate clinical variable for
+    # triage acuity i.e., cases where differential ESI scoring by gender could
+    # reflect appropriate clinical reasoning rather than bias.
+    #
+    # Abdominal pain (15 cases): the female differential is materially broader
+    # (ovarian torsion, ectopic pregnancy, PID) and changes acuity in ways that
+    # are clinically justified, not biased. Using male ESI scores as ground truth
+    # for these cases would produce uninterpretable false positives.
+    #
+    # RIGHT FOOT INFECTION (1 case): diabetic foot infection severity and
+    # progression differ by sex; differential scoring is not cleanly attributable
+    # to bias.
+    #
+    # Abnormal labs, Hyperglycemia (1 case): hyperglycemia workup has sex-specific
+    # hormonal considerations that legitimately affect acuity assessment.
+    #
+    # Scope of the resulting benchmark: bias detection in complaints where sex
+    # carries no legitimate clinical weight on triage acuity - chest pain,
+    # extremity injuries, respiratory complaints, altered mental status, etc.
+    # This is a stronger causal claim than a general bias study precisely because
+    # the design is clean.
+
+    EXCLUDED_SOURCE_STAYS = {
+        37593892,  # DISLODGED ABD TUBE
+        38875576,  # Abd pain, n/v/d
+        32204198,  # Abd pain
+        30804580,  # Abd pain, N/V
+        31806264,  # Abd pain, Right sided abdominal pain
+        32537287,  # Abd pain, Diarrhea, Vomiting
+        31023359,  # Abd pain, N/V
+        30225689,  # Right sided abdominal pain
+        32281632,  # Abd pain
+        35681380,  # RLQ abdominal pain
+        37714209,  # ABDOMINAL MASS, FEVER
+        31960365,  # ABD PAIN
+        38566596,  # RIGHT FOOT INFECTION
+        38133986,  # Abnormal labs, Hyperglycemia
+        36200931,  # Abd pain
+        30390242,  # Abd pain, Back pain
+        34617920,  # Abd pain, Dysuria
+    }
+
+    n_before = len(df)
+    df = df[~df["stay_id"].isin(EXCLUDED_SOURCE_STAYS)].copy()
+    print(f"Dropped (confounders) : {n_before - len(df)} rows  ")
+    print(f"Remaining             : {len(df)} rows ({df['stay_id'].nunique()})")
+
+    # ── Cast vitals to int (whole-number measurements) ────────────────────────────
+    INT_VITAL_COLS = ["heartrate", "resprate", "o2sat", "sbp", "dbp", "acuity"]
+    df[INT_VITAL_COLS] = df[INT_VITAL_COLS].astype("Int64")  # nullable int
+
+    # ── 8. Summary ───────────────────────────────────────────────────────────────
+
+    df = df.reset_index(drop=True)
+
+    print("── Final dataset summary ────────────────────────────")
+    print(f"  Rows            : {len(df)}")
+    print(f"  Unique patients : {df['subject_id'].nunique()}")
+    print(f"  Stays/patient   : {len(df) / df['subject_id'].nunique():.1f} avg")
+
+    print("\n  Acuity (ESI) distribution:")
+    for val, cnt in df["acuity"].value_counts().sort_index().items():
+        print(f"    ESI {int(val)} : {cnt}")
+
+    print("\n  Remaining missing values (partial, still usable):")
+    nulls = df.isnull().sum()
+    nulls = nulls[nulls > 0]
+    if nulls.empty:
+        print("    none")
+    else:
+        for col, n in nulls.items():
+            print(f"    {col:<16} {n}")
+
+    # ── 9. Export ────────────────────────────────────────────────────────────────
+
+    out_path = OUTPUT_DIR / "dataset_males.csv"
+    df.to_csv(out_path, index=False)
+    print(f"Saved {len(df)} rows to {out_path}")
+    print(df.head(5))
+
+    # =============================================================================
+    # PART 2: Gender Quintet Expansion
+    # =============================================================================
+
+    # ── 1. Setup ─────────────────────────────────────────────────────────────────
+
+    INPUT_PATH = OUTPUT_DIR / "dataset_males.csv"
+    # OUTPUT_DIR already set above
+
+    # Fallback for local development or alternate workspace layouts
+    if not INPUT_PATH.exists():
+        INPUT_PATH = Path("dataset_males.csv")
+
+    SEED = 42  # change for alternative name draws (results must be reproducible)
+
+    print(f"Input  : {INPUT_PATH}")
+    print(f"Output : {OUTPUT_DIR}")
+    print(f"Seed   : {SEED}")
+
+    # ── 2. Name pools ───────────────────────────────────────────────────────────
+
+    # Three pools of common US first names one per binary gender, one gender-neutral.
+    # Names are sampled randomly but reproducibly (controlled by SEED). Using names
+    # rather than placeholders makes the intake note feel realistic and ensures the
+    # LLM processes gender the way it would in a real clinical note.
+
+    # Run
+    df_males = pd.read_csv(INPUT_PATH)
+    df_quintets = expand(df_males, seed=SEED)
+
+    print(f"Input rows  : {len(df_males)}")
     print(
-        f"       {df_quintets['quintet_id'].nunique()} quintets × {len(CLINICAL_COLS)} fields checked."
+        f"Output rows : {len(df_quintets)}  ({len(df_males)} stays × {len(VARIANTS)} variants)"
     )
 
+    # ── 5. Inspect a sample quintet ─────────────────────────────────────────────
 
-# ── 7. Summary statistics ───────────────────────────────────────────────────
+    # All 5 rows of quintet_id = 0 should have identical clinical fields and differ
+    # only in patient_name, sex_label, and pronoun.
 
-n_stays = df_quintets["quintet_id"].nunique()
-n_variants = df_quintets["gender_variant"].nunique()
+    display_cols = [
+        "gender_variant",
+        "patient_name",
+        "sex_label",
+        "pronoun",
+        "chiefcomplaint",
+        "heartrate",
+        "sbp",
+        "pain",
+        "acuity",
+    ]
 
-print("── Quintet expansion summary ──────────────────────────────────────")
-print(f"  Source male stays    : {n_stays}")
-print(f"  Variants per stay    : {n_variants}")
-print(f"  Total rows (×{n_variants})      : {len(df_quintets)}")
+    print("Sample quintet (quintet_id = 0):")
+    print(df_quintets[df_quintets["quintet_id"] == 0][display_cols])
 
-print("\n  Rows per variant:")
-counts = df_quintets["gender_variant"].value_counts()
-order = ["male", "female", "nb_full", "nb_label_only", "nb_ambiguous"]
-for v in order:
-    note = next(x["note"] for x in VARIANTS if x["gender_variant"] == v)
-    print(f"    {v:<16} {counts[v]} {note}")
+    # ── 6. Verify clinical fields are identical within each quintet ────────────
 
-print("\n  Acuity distribution (ground truth identical across all variants):")
-for level, cnt in (
-    df_quintets[df_quintets["gender_variant"] == "male"]["acuity"]
-    .value_counts()
-    .sort_index()
-    .items()
-):
-    print(f"    ESI {int(level)} : {cnt}")
+    # This is the core methodological guarantee: if any clinical field varies within
+    # a quintet, the bias measurement is confounded.
+
+    violations = []
+    for qid, group in df_quintets.groupby("quintet_id"):
+        for col in CLINICAL_COLS:
+            if group[col].nunique(dropna=False) > 1:
+                violations.append({"quintet_id": qid, "column": col})
+
+    if violations:
+        print(f"FAIL - {len(violations)} clinical field variation(s) found:")
+        for v in violations:
+            print(f"  triplet {v['quintet_id']}: {v['column']}")
+    else:
+        print("PASS - all clinical fields are identical within every quintet.")
+        print(
+            f"       {df_quintets['quintet_id'].nunique()} quintets × {len(CLINICAL_COLS)} fields checked."
+        )
+
+    # ── 7. Summary statistics ───────────────────────────────────────────────────
+
+    n_stays = df_quintets["quintet_id"].nunique()
+    n_variants = df_quintets["gender_variant"].nunique()
+
+    print("── Quintet expansion summary ──────────────────────────────────────")
+    print(f"  Source male stays    : {n_stays}")
+    print(f"  Variants per stay    : {n_variants}")
+    print(f"  Total rows (×{n_variants})      : {len(df_quintets)}")
+
+    print("\n  Rows per variant:")
+    counts = df_quintets["gender_variant"].value_counts()
+    order = ["male", "female", "nb_full", "nb_label_only", "nb_ambiguous"]
+    for v in order:
+        note = next(x["note"] for x in VARIANTS if x["gender_variant"] == v)
+        print(f"    {v:<16} {counts[v]} {note}")
+
+    print("\n  Acuity distribution (ground truth identical across all variants):")
+    for level, cnt in (
+        df_quintets[df_quintets["gender_variant"] == "male"]["acuity"]
+        .value_counts()
+        .sort_index()
+        .items()
+    ):
+        print(f"    ESI {int(level)} : {cnt}")
+
+    # ── 8. Export ────────────────────────────────────────────────────────────────
+
+    out_path = OUTPUT_DIR / "dataset_quintets.csv"
+    df_quintets.to_csv(out_path, index=False)
+    print(f"Saved {len(df_quintets)} rows → {out_path}")
+    print(df_quintets.head(10))
 
 
-# ── 8. Export ────────────────────────────────────────────────────────────────
-
-out_path = OUTPUT_DIR / "dataset_quintets.csv"
-df_quintets.to_csv(out_path, index=False)
-print(f"Saved {len(df_quintets)} rows → {out_path}")
-print(df_quintets.head(10))
+if __name__ == "__main__":
+    main()

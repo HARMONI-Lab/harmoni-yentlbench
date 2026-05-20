@@ -101,4 +101,3 @@ def categorize_complaint(prompt: str) -> str:
         if re.search(pattern, prompt_lower):
             return category
     return "other"
-    return "other"
