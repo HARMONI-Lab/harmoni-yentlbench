@@ -5,7 +5,7 @@ YentlBench is designed to evaluate clinical bias across a wide spectrum of Large
 ## Two Execution Tracks
 
 ### 1. Kaggle (Frontier Models)
-State-of-the-art proprietary models (like GPT-4o, Claude 3.5, and Gemini 1.5) are evaluated via Kaggle notebooks. This track is preferred for API-based models to manage secrets securely, utilize cloud concurrency, and produce reproducible evaluation artifacts. 
+State-of-the-art proprietary models (like GPT, DeepSeek, Claude, and Gemini) are evaluated via Kaggle notebooks. This track is preferred for API-based models to manage secrets securely, utilize cloud concurrency, and produce reproducible evaluation artifacts. 
 - These runs generate `*.run.json` files containing the prompts, predictions, and metrics.
 
 ### 2. Local Runner (Local Models)
