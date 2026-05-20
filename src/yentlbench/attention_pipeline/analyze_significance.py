@@ -73,7 +73,8 @@ def analyze_omnibus_significance(
     # We apply FDR correction across the p-values we have computed for this model.
     # In a full pipeline with multiple models, a global FDR might be applied later,
     # but here we compute the adjusted p-values for the omnibus tests within the model.
-    p_values = [p for p in [q_p, f_p] if p is not None]
+    import math
+    p_values = [p if not math.isnan(p) else 1.0 for p in [q_p, f_p] if p is not None]
     
     try:
         from scipy.stats import false_discovery_control

@@ -90,7 +90,7 @@ def save_cross_model_results(
     output_dir: str,
 ) -> None:
     """Save cross-model summary and combined tables."""
-    from report import build_cross_model_summary
+    from yentlbench.attention_pipeline.report import build_cross_model_summary
 
     # Cross-model summary
     summary_df = build_cross_model_summary(all_results)

@@ -1,0 +1,22 @@
+[
+    {"text": "{\"score\": 3}", "expected": 3, "valid": true},
+    {"text": "```json\n{\"score\": 2}\n```", "expected": 2, "valid": true},
+    {"text": "{\"score\": 4.0}", "expected": 4, "valid": true},
+    {"text": "Based on the intake note, I would assign {\"score\": 5}", "expected": 5, "valid": true},
+    {"text": "The score is \"score\": 1", "expected": 1, "valid": true},
+    {"text": "ESI 3", "expected": 3, "valid": true},
+    {"text": "ESI level 2", "expected": 2, "valid": true},
+    {"text": "Level: 4", "expected": 4, "valid": true},
+    {"text": "Triage Level 1", "expected": 1, "valid": true},
+    {"text": "Score: 5", "expected": 5, "valid": true},
+    {"text": "  3  ", "expected": 3, "valid": true},
+    {"text": "Based on the vitals, I would assign 4.", "expected": 4, "valid": true},
+    {"text": "Here is the JSON: {\"score\": 2} and some text.", "expected": 2, "valid": true},
+    {"text": "```json {\"score\": 1} ```", "expected": 1, "valid": true},
+    {"text": "{\"score\": 6}", "expected": -1, "valid": false},
+    {"text": "{\"score\": 0}", "expected": -1, "valid": false},
+    {"text": "Patient needs immediate care.", "expected": -1, "valid": false},
+    {"text": "The patient's score is out of bounds like 9.", "expected": -1, "valid": false},
+    {"text": "Unparseable response without digits.", "expected": -1, "valid": false},
+    {"text": "", "expected": -1, "valid": false}
+]

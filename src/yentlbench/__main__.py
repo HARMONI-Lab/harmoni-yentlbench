@@ -44,11 +44,11 @@ def run_run(args):
             print(f"Error: {e}")
         sys.exit(0)
         
-    if not args.model or not args.variant:
-        print("Error: --model and --variant are required unless --list-models is used.")
+    if not args.model or not args.variants:
+        print("Error: --model and --variants are required unless --list-models is used.")
         sys.exit(1)
         
-    dataset_path = "eval/dataset_quintets.csv"
+    dataset_path = args.data
     if not os.path.exists(dataset_path):
         print(f"Error: {dataset_path} not found. Run 'prepare' first.")
         sys.exit(1)
@@ -60,15 +60,16 @@ def run_run(args):
     
     runner = OllamaRunner(model_name=args.model, host=args.host)
     try:
-        runner.run(vignettes, args.variant, run_number=args.run_number, output_dir=args.output_dir)
+        for variant in args.variants:
+            runner.run(vignettes, variant, run_number=args.run_id, output_dir=args.results_dir, dry_run=args.dry_run)
     except OllamaNotRunningError as e:
         print(f"Error: {e}")
         sys.exit(1)
 
 
 def run_merge(args):
-    # merge_runs.py expects argv: [prog, --results-dir, ..., --output, ...]
-    argv = ["yentlbench", "--results-dir", args.results_dir, "--output", args.output]
+    # merge_runs.py expects argv: [--results-dir, ..., --output, ...]
+    argv = ["--results-dir", args.results_dir, "--output", args.output]
     if args.include_metrics:
         argv.append("--include-metrics")
     if args.verbose:
@@ -79,13 +80,13 @@ def run_analyze(args):
     # benchmark_stats.py
     check_artifact(args.input, "merge")
     
-    stats_argv = ["yentlbench", "--input", args.input, "--output", args.output_stats, "--verbose"]
+    stats_argv = ["--input", args.input, "--output", args.output_stats]
     if args.verbose:
         stats_argv.append("--verbose")
     stats_main(stats_argv)
     
     # attention_pipeline/pipeline.py
-    attention_argv = ["yentlbench", "--input", args.input, "--output-dir", args.output_attention]
+    attention_argv = ["--input", args.input, "--output-dir", args.output_attention]
     if args.verbose:
         attention_argv.append("--verbose")
     attention_main(attention_argv)
@@ -100,11 +101,13 @@ def main():
     # Run
     run_p = subparsers.add_parser("run", help="Run local LLM evaluations")
     run_p.add_argument("--model", required=False, help="Ollama model name (e.g. llama3:8b)")
-    run_p.add_argument("--variant", required=False, choices=["nb_ambiguous", "female", "male", "nb_label_only"], help="Target variant to run")
+    run_p.add_argument("--variants", nargs="+", default=["nb_ambiguous", "female", "male", "nb_label_only"], help="Target variants to run (default: all four)")
     run_p.add_argument("--host", default="http://localhost:11434", help="Ollama host url")
-    run_p.add_argument("--run-number", type=int, default=1, help="Run number to append to filename")
-    run_p.add_argument("--output-dir", default="results", help="Directory to save .run.json files")
+    run_p.add_argument("--run-id", type=int, default=1, help="Run ID to append to filename (e.g., 1)")
+    run_p.add_argument("--results-dir", default="results", help="Directory to save .run.json files")
+    run_p.add_argument("--data", default="eval/dataset_quintets.csv", help="Path to dataset_quintets.csv")
     run_p.add_argument("--list-models", action="store_true", help="List available Ollama models")
+    run_p.add_argument("--dry-run", action="store_true", help="Print run info without calling Ollama endpoints")
 
     # Merge
     merge_p = subparsers.add_parser("merge", help="Merge run results")
