@@ -344,11 +344,24 @@ make prepare
 ```
 This generates `dataset_output/dataset_males.csv` and `dataset_output/dataset_quintets.csv`.
 
-## Step 1: Running the Benchmark on Kaggle
+### Step 1a: Running the Benchmark on Kaggle (Frontier Models)
 
-This benchmark is designed to be run on Kaggle. You can find more details and run the benchmark directly on Kaggle: [Yentlbench Kaggle Benchmark](https://www.kaggle.com/benchmarks/innacampo/yentlbench)
+This benchmark is designed to be run on Kaggle for proprietary API-based frontier models. You can find more details and run the benchmark directly on Kaggle: [Yentlbench Kaggle Benchmark](https://www.kaggle.com/benchmarks/innacampo/yentlbench)
+
+### Step 1b: Running the Benchmark Locally (Open Models)
+
+To run local open-weights models, ensure Ollama is installed and running, then use the CLI:
+
+```bash
+yentlbench run --model llama3:8b --variants female male nb_ambiguous nb_label_only
+```
+This will automatically generate the identical `.run.json` artifacts in your `results/` directory as the Kaggle pipeline does. 
+
+For detailed instructions on mixing runs from Kaggle and local sources into a single benchmark analysis, read [Kaggle vs. Local Runner Workflow](docs/local_vs_kaggle.md).
 
 ### Step 2: Merge Runs
+
+**Important:** Steps 2–4 are completely agnostic to where your `*.run.json` files came from. Whether you download them from your Kaggle notebook or generate them locally via `yentlbench run`, you just place them in your `results/` folder and the pipeline processes them identically.
 
 First, merge all the individual `.run.json` files into a unified CSV.
 
