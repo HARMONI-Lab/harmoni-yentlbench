@@ -26,3 +26,7 @@ src/yentlbench/local_runner/__init__.py
 src/yentlbench/local_runner/ollama_runner.py
 src/yentlbench/local_runner/parser.py
 src/yentlbench/local_runner/prompt.py
+tests/test_integration.py
+tests/test_parser.py
+tests/test_prompt_builder.py
+tests/test_run_json_schema.py

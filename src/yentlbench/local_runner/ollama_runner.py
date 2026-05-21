@@ -87,11 +87,13 @@ class OllamaRunner:
                     # Extract prompts that have already been evaluated
                     for sr in subruns:
                         try:
-                            prompt = sr["conversations"][0]["requests"][0]["contents"][0]["parts"][0]["text"]
+                            prompt = sr["conversations"][0]["requests"][0]["contents"][
+                                0
+                            ]["parts"][0]["text"]
                             completed_prompts.add(prompt)
                         except (KeyError, IndexError):
                             pass
-                
+
                 if len(completed_prompts) == len(matching_vignettes):
                     print(
                         f"[{self.model_name}] Run {run_number} for variant '{target_variant}' already fully exists. Skipping."
@@ -103,12 +105,14 @@ class OllamaRunner:
                         f"({len(completed_prompts)}/{len(matching_vignettes)} completed)."
                     )
             except (json.JSONDecodeError, KeyError):
-                print(f"Warning: Failed to parse existing run file at {out_path}. Starting fresh.")
+                print(
+                    f"Warning: Failed to parse existing run file at {out_path}. Starting fresh."
+                )
                 subruns = []
 
         for vignette in matching_vignettes:
             prompt_text = build_prompt(vignette, target_variant)
-            
+
             # Row-level resume check
             if prompt_text in completed_prompts:
                 continue

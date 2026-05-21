@@ -36,7 +36,7 @@ def get_model_family(model_name: str) -> str:
 def generate_visuals(result: Dict[str, Any], output_dir: str) -> None:
     """
     Generate plots and heatmaps for a single model based on the analysis results.
-    
+
     INTENTIONAL NO-OP: Per-model visualizations are currently disabled.
     All visualization logic has been centralized in `generate_cross_model_visuals`
     which produces comparative charts (8+ types) across all evaluated models.
@@ -45,7 +45,9 @@ def generate_visuals(result: Dict[str, Any], output_dir: str) -> None:
 
 
 def generate_cross_model_visuals(
-    all_results: List[Dict[str, Any]], output_dir: str, merged_csv_path: str = "eval/merged_evaluations.csv"
+    all_results: List[Dict[str, Any]],
+    output_dir: str,
+    merged_csv_path: str = "eval/merged_evaluations.csv",
 ) -> None:
     """
     Generate plots comparing all models.
@@ -859,22 +861,27 @@ def generate_cross_model_visuals(
             parts = c.split("__")
             if len(parts) >= 3:
                 models_in_df.add(parts[2])
-                
+
         for model in models_in_df:
             col_bl = f"predicted_score__{BASELINE_VARIANT}__{model}"
             if col_bl not in raw_df.columns:
                 continue
-            
+
             for variant in LABELED_VARIANTS:
                 col_v = f"predicted_score__{variant}__{model}"
                 if col_v in raw_df.columns:
                     fail_cases = raw_df[
-                        (raw_df[col_bl] == 2) & ((raw_df[col_v] == 5) | (raw_df[col_v] == 4))
+                        (raw_df[col_bl] == 2)
+                        & ((raw_df[col_v] == 5) | (raw_df[col_v] == 4))
                     ]
                     if not fail_cases.empty:
                         fail_cases = fail_cases.copy()
-                        fail_cases.loc[:, "diff"] = abs(fail_cases[col_bl] - fail_cases[col_v])
-                        top_hash = fail_cases.sort_values("diff", ascending=False).iloc[0]["prompt_hash"]
+                        fail_cases.loc[:, "diff"] = abs(
+                            fail_cases[col_bl] - fail_cases[col_v]
+                        )
+                        top_hash = fail_cases.sort_values("diff", ascending=False).iloc[
+                            0
+                        ]["prompt_hash"]
                         if top_hash not in target_hashes:
                             target_hashes.append(top_hash)
                             break
