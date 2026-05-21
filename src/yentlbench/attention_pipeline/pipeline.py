@@ -18,30 +18,48 @@ import warnings
 from typing import Optional, List, Dict, Any
 
 from yentlbench.config import BASELINE_VARIANT
-from util import (
+from yentlbench.attention_pipeline.util import (
     setup_logging,
     load_merged_data,
     discover_groups,
     get_valid_data,
     get_prompt_arrays,
 )
-from analyze_baseline import analyze_baseline_deviation, decompose_sex_info_effect, compute_transition_matrices, analyze_transition_risk
-from analyze_sensitivity import analyze_information_leakage, compute_sensitivity_scores
-from analyze_vulnerability import (
+from yentlbench.attention_pipeline.analyze_baseline import (
+    analyze_baseline_deviation,
+    decompose_sex_info_effect,
+    compute_transition_matrices,
+    analyze_transition_risk,
+)
+from yentlbench.attention_pipeline.analyze_sensitivity import (
+    analyze_information_leakage,
+    compute_sensitivity_scores,
+)
+from yentlbench.attention_pipeline.analyze_vulnerability import (
     compute_vulnerability_by_esi,
     compute_vulnerability_by_clinical_category,
     analyze_decision_boundaries,
     analyze_consistency_by_difficulty,
 )
-from analyze_pairwise import build_case_detail_table, analyze_all_pairs
-from analyze_significance import analyze_omnibus_significance
-from report import (
+from yentlbench.attention_pipeline.analyze_pairwise import (
+    build_case_detail_table,
+    analyze_all_pairs,
+)
+from yentlbench.attention_pipeline.analyze_significance import (
+    analyze_omnibus_significance,
+)
+from yentlbench.attention_pipeline.report import (
     print_model_report,
-    build_cross_model_summary,
     print_cross_model_summary,
 )
-from save import save_model_results, save_cross_model_results
-from visuals import generate_visuals, generate_cross_model_visuals
+from yentlbench.attention_pipeline.save import (
+    save_model_results,
+    save_cross_model_results,
+)
+from yentlbench.attention_pipeline.visuals import (
+    generate_visuals,
+    generate_cross_model_visuals,
+)
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -99,9 +117,7 @@ def analyze_model(
     result["sensitivity"] = compute_sensitivity_scores(predictions)
 
     # 6. Vulnerability by ESI level and clinical category
-    result["vulnerability_by_esi"] = compute_vulnerability_by_esi(
-        y_true, predictions
-    )
+    result["vulnerability_by_esi"] = compute_vulnerability_by_esi(y_true, predictions)
     result["vulnerability_by_category"] = compute_vulnerability_by_clinical_category(
         y_true, predictions, prompts
     )
@@ -165,9 +181,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     # ── Load and validate data ────────────────────────────────────────
     df = load_merged_data(args.input)
 
-    pred_cols = sorted(
-        [c for c in df.columns if c.startswith("predicted_score__")]
-    )
+    pred_cols = sorted([c for c in df.columns if c.startswith("predicted_score__")])
     groups = discover_groups(pred_cols)
 
     if not groups:
@@ -227,14 +241,17 @@ def main(argv: Optional[List[str]] = None) -> None:
         sys.exit(1)
 
     # Print cross-model summary to console and save to file
-    cross_model_report_path = os.path.join(args.output_dir, "cross_model_attention_report.txt")
+    cross_model_report_path = os.path.join(
+        args.output_dir, "cross_model_attention_report.txt"
+    )
     with open(cross_model_report_path, "w", encoding="utf-8") as report_file:
         print_cross_model_summary(all_results, file=report_file)
     print_cross_model_summary(all_results)
     logger.info("Saved cross-model report to '%s'", cross_model_report_path)
 
     save_cross_model_results(all_results, args.output_dir)
-    generate_cross_model_visuals(all_results, args.output_dir)
+    generate_cross_model_visuals(all_results, args.output_dir, args.input)
+
 
 if __name__ == "__main__":
     main()

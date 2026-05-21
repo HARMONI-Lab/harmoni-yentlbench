@@ -57,6 +57,7 @@ This design enables three layers of causal inference:
 The `dataset_prep.py` script prepares the MIMIC-IV-ED Demo [3] data for gender bias benchmarking. The preparation is split into two parts:
 
 1. **Filtering & Curating (`dataset_males.csv`)**: 
+   - `dataset_prep.py` acts natively via the unified CLI (`yentlbench prepare`) using clean, encapsulated logic (no import-time side effects).
    - Joins `edstays` and `triage` tables to capture the exact information available at intake.
    - Filters down exclusively to male patients to establish a clean ground truth free of historical female under-triage bias.
    - Actively excludes cases where sex is a *legitimate* clinical variable (e.g., abdominal pain). This ensures that any differential scoring detected in the benchmark is cleanly attributable to bias, not appropriate clinical reasoning.
@@ -195,7 +196,7 @@ Computes omnibus statistical tests across all variants for each model to determi
 - **Friedman test**[5]: Do predicted ESI scores (ordinal) differ across variants? (A repeated-measures test on the same clinical cases).
 - **FDR Correction**[6]: Benjamini-Hochberg false discovery rate correction applied to the p-values to control for multiple testing.
 
-**Outputs**: Per-model directory with 8+ CSV files (transition matrices, dangerous transitions, vulnerability profiles, boundary crossings, consistency by difficulty, pairwise comparisons, case detail, model summary) plus cross-model summary tables and visualizations.
+**Outputs**: Per-model directory with 8+ CSV files (transition matrices, dangerous transitions, vulnerability profiles, boundary crossings, consistency by difficulty, pairwise comparisons, case detail, model summary). Note that per-model visualizations are disabled by design, and all plotting is intelligently consolidated into comprehensive cross-model charts in the parent directory.
 
 ## Output Structure
 
@@ -344,11 +345,26 @@ make prepare
 ```
 This generates `dataset_output/dataset_males.csv` and `dataset_output/dataset_quintets.csv`.
 
-## Step 1: Running the Benchmark on Kaggle
+### Step 1a: Running the Benchmark on Kaggle (Frontier Models)
 
-This benchmark is designed to be run on Kaggle. You can find more details and run the benchmark directly on Kaggle: [Yentlbench Kaggle Benchmark](https://www.kaggle.com/benchmarks/innacampo/yentlbench)
+This benchmark is designed to be run on Kaggle for proprietary API-based frontier models. You can find more details and run the benchmark directly on Kaggle: [Yentlbench Kaggle Benchmark](https://www.kaggle.com/benchmarks/innacampo/yentlbench)
+
+### Step 1b: Running the Benchmark Locally (Open Models)
+
+To run local open-weights models, ensure Ollama is installed and running, then use the CLI:
+
+```bash
+yentlbench run --model llama3:8b --variants female male nb_ambiguous nb_label_only
+```
+This will automatically generate the identical `.run.json` artifacts in your `results/` directory as the Kaggle pipeline does. 
+
+*New feature*: The local runner now includes robust **row-level resuming**. If your evaluation crashes mid-way, you will not lose your progress. The process will skip already-completed prompts and pick up exactly where it left off.
+
+For detailed instructions on mixing runs from Kaggle and local sources into a single benchmark analysis, read [Kaggle vs. Local Runner Workflow](docs/local_vs_kaggle.md).
 
 ### Step 2: Merge Runs
+
+**Important:** Steps 2–4 are completely agnostic to where your `*.run.json` files came from. Whether you download them from your Kaggle notebook or generate them locally via `yentlbench run`, you just place them in your `results/` folder and the pipeline processes them identically.
 
 First, merge all the individual `.run.json` files into a unified CSV.
 
@@ -400,6 +416,7 @@ Check the `--output-dir` (e.g., `eval/attention/`) for detailed CSV outputs per 
 - `src/yentlbench/attention_pipeline/visuals.py`: Generates cross-model plots and visualization charts.
 - `src/yentlbench/attention_pipeline/report.py` / `src/yentlbench/attention_pipeline/save.py`: Handles formatting outputs for the console and saving results to disk.
 - `src/yentlbench/attention_pipeline/util.py`: Shared data loading and helper functions.
+- `src/yentlbench/local_runner/`: Submodule containing the robust `OllamaRunner` (with row-level resuming logic), prompt builders, and local output parsers.
 
 This work was created as part of the Kaggle competition "Measuring Progress Toward AGI - Cognitive Abilities". [7] 
 

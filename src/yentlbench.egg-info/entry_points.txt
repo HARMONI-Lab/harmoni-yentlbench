@@ -1,0 +1,2 @@
+[console_scripts]
+yentlbench = yentlbench.__main__:main

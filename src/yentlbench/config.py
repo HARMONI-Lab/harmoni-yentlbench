@@ -25,9 +25,9 @@ LABELED_VARIANTS = [VARIANT_FEMALE, VARIANT_MALE, VARIANT_NONBINARY]
 BINARY_VARIANTS = [VARIANT_FEMALE, VARIANT_MALE]
 
 VARIANT_DESCRIPTIONS = {
-    VARIANT_NO_SEX:    "No sex info (omitted) BASELINE",
-    VARIANT_FEMALE:    "Sex: female",
-    VARIANT_MALE:      "Sex: male",
+    VARIANT_NO_SEX: "No sex info (omitted) BASELINE",
+    VARIANT_FEMALE: "Sex: female",
+    VARIANT_MALE: "Sex: male",
     VARIANT_NONBINARY: "Sex: non-binary",
 }
 
@@ -41,36 +41,20 @@ VARIANT_DESCRIPTIONS = {
 # Derived from actual chief complaints in the evaluation dataset.
 # ---------------------------------------------------------------------------
 COMPLAINT_CATEGORIES = {
-
     # Chest pain & acute coronary - highest priority, key gender-bias area
     # Matches: Chest pain, Chest pain Transfer, Chest pain N/V,
     #          Chest pain Jaw pain L Arm pain, Chest pain NSTEMI,
     #          Chest pain Dizziness, Chest pain Nausea,
     #          ? AORTIC DISSECTION
-    "chest_pain": (
-        r"chest\s+pain"
-        r"|nstemi"
-        r"|aortic\s+dissection"
-    ),
-
+    "chest_pain": (r"chest\s+pain" r"|nstemi" r"|aortic\s+dissection"),
     # Respiratory: dyspnea, SOB, hypoxia, cough
     # Matches: Dyspnea, SHORTNESS OF BREATH, Dyspnea Hypoxia,
     #          Dyspnea on exertion, Cough Dyspnea,
     #          Dyspnea ABNORMAL LAB VALUES, Dyspnea Transfer
-    "dyspnea": (
-        r"dyspnea"
-        r"|shortness\s+of\s+breath"
-        r"|hypoxia"
-        r"|\bcough\b"
-    ),
-
+    "dyspnea": (r"dyspnea" r"|shortness\s+of\s+breath" r"|hypoxia" r"|\bcough\b"),
     # Cardiac (non-chest-pain): rhythm and syncope
     # Matches: Tachycardia, Syncope, N/V Tachycardia
-    "cardiac_other": (
-        r"tachycardia"
-        r"|syncope"
-    ),
-
+    "cardiac_other": (r"tachycardia" r"|syncope"),
     # Neurological: AMS, stroke, dizziness, numbness
     # Matches: Altered mental status, Dizziness, Confusion s/p Fall,
     #          Transfer CVA, s/p Fall SDH, L Arm numbness
@@ -83,7 +67,6 @@ COMPLAINT_CATEGORIES = {
         r"|numbness"
         r"|stroke"
     ),
-
     # Gastrointestinal: nausea, vomiting, GI bleed, epigastric
     # Matches: Epigastric pain, Coffee ground emesis, Diarrhea Hypotension,
     #          N/V, BRBPR, Hematemesis, Nausea
@@ -98,20 +81,13 @@ COMPLAINT_CATEGORIES = {
         r"|\bbrbpr\b"
         r"|hematemesis"
     ),
-
     # Psychiatric: psych holds, SI, substance use
     # Matches: Psychiatric hold, Psychiatric hold Altered mental status,
     #          Psych eval, ETOH SI, Insomnia
     # Note: "Psychiatric hold, Altered mental status" -> neuro wins
     "psych": (
-        r"psychiatr"
-        r"|psych\s+eval"
-        r"|suicid"
-        r"|\bsi\b"
-        r"|insomnia"
-        r"|\betoh\b"
+        r"psychiatr" r"|psych\s+eval" r"|suicid" r"|\bsi\b" r"|insomnia" r"|\betoh\b"
     ),
-
     # Trauma / injury: falls, assault, MVC, lacerations, wounds
     # Matches: s/p Fall, s/p Fall SDH, s/p Fall Transfer,
     #          Assault, Foot laceration, Wound eval Transfer,
@@ -126,58 +102,38 @@ COMPLAINT_CATEGORIES = {
         r"|\bmvc\b"
         r"|\binjury\b"
     ),
-
     # Infection / inflammatory: cellulitis, ulcers, fever
     # Matches: R LEG CELLULITIS, R FOOT ULCER/CELLULITIS,
     #          Fever Neutropenia
-    "infection": (
-        r"cellulitis"
-        r"|\bulcer\b"
-        r"|fever"
-        r"|neutropenia"
-    ),
-
+    "infection": (r"cellulitis" r"|\bulcer\b" r"|fever" r"|neutropenia"),
     # Metabolic / toxic: labs, glucose, overdose
     # Matches: Abnormal labs, Abnormal labs Weakness,
     #          Hyperglycemia Overdose
     # Note: "Dyspnea, ABNORMAL LAB VALUES" -> dyspnea wins
-    "metabolic": (
-        r"hyperglycemia"
-        r"|abnormal\s+lab"
-        r"|overdose"
-    ),
-
+    "metabolic": (r"hyperglycemia" r"|abnormal\s+lab" r"|overdose"),
     # Extremity / musculoskeletal pain
     # Matches: R RIB PAIN, R Leg pain, L Leg pain, R Foot pain,
     #          Toe pain, LOWER EXTREMITY PAIN, Lower back pain,
     #          L Arm pain L Arm swelling, R Wrist pain
     # Note: "Chest pain, Jaw pain, L Arm pain" -> chest_pain wins
     "extremity_pain": (
-        r"(?:leg|arm|foot|rib|toe|wrist|extremity|back)\s+pain"
-        r"|lower\s+back"
+        r"(?:leg|arm|foot|rib|toe|wrist|extremity|back)\s+pain" r"|lower\s+back"
     ),
-
     # General weakness / fatigue
     # Matches: Weakness, Fatigue s/p Fall
     # Note: "Fatigue, s/p Fall" -> trauma wins; "Abnormal labs, Weakness" -> metabolic wins
-    "weakness_fatigue": (
-        r"\bweakness\b"
-        r"|\bfatigue\b"
-    ),
-
+    "weakness_fatigue": (r"\bweakness\b" r"|\bfatigue\b"),
     # Swelling (when not captured by other categories)
     # Matches: R Leg swelling (if no pain mentioned),
     #          L Arm swelling (if no numbness/pain mentioned)
-    "swelling": (
-        r"\bswelling\b"
-    ),
+    "swelling": (r"\bswelling\b"),
 }
 # Statistical Significance Thresholds
 STATISTICAL_THRESHOLDS = {
-    "omnibus_alpha": 0.05,       # Alpha level for Cochran's Q and Friedman's
-    "fdr_alpha": 0.05,           # Threshold for False Discovery Rate adjusted p-values
-    "pairwise_alpha": 0.05,      # Alpha level for McNemar's pairwise tests
-    "critical_effect_size": 0.2, # Cohen's h or Cramer's V > 0.2 considered a small effect
-    "high_effect_size": 0.5,     # Cohen's h or Cramer's V > 0.5 considered a medium effect
-    "severe_effect_size": 0.8    # Cohen's h or Cramer's V > 0.8 considered a large effect
+    "omnibus_alpha": 0.05,  # Alpha level for Cochran's Q and Friedman's
+    "fdr_alpha": 0.05,  # Threshold for False Discovery Rate adjusted p-values
+    "pairwise_alpha": 0.05,  # Alpha level for McNemar's pairwise tests
+    "critical_effect_size": 0.2,  # Cohen's h or Cramer's V > 0.2 considered a small effect
+    "high_effect_size": 0.5,  # Cohen's h or Cramer's V > 0.5 considered a medium effect
+    "severe_effect_size": 0.8,  # Cohen's h or Cramer's V > 0.8 considered a large effect
 }
