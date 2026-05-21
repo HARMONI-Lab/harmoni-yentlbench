@@ -505,13 +505,13 @@ def print_stats_summary(stats_df: pd.DataFrame, file: Any = sys.stdout) -> None:
 
     ranked = stats_df[available].set_index("run")
     for metric in higher_is_better:
-        if metric in ranked.columns:
+        if metric in ranked.columns and not ranked[metric].isna().all():
             best_run = ranked[metric].idxmax()
             best_val = ranked[metric].max()
             print(f"  {metric:>35s}: {best_run}  ({best_val:.4f})", file=file)
 
     for metric in lower_is_better:
-        if metric in ranked.columns:
+        if metric in ranked.columns and not ranked[metric].isna().all():
             best_run = ranked[metric].idxmin()
             best_val = ranked[metric].min()
             print(f"  {metric:>35s}: {best_run}  ({best_val:.4f})", file=file)
