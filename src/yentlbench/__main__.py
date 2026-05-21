@@ -16,6 +16,7 @@ def check_artifact(path: str, stage_name: str):
 
 def run_prepare(args):
     from yentlbench.dataset_prep import main as prep_main
+
     prep_main()
 
 

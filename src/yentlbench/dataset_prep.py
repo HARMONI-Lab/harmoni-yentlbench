@@ -207,8 +207,6 @@ NONBINARY_NAMES = [
 ABSENT = ""  # sentinel: this field is intentionally omitted from the intake note
 
 
-
-
 # ── 3. Variant definitions ──────────────────────────────────────────────────
 
 # Each variant is a dict specifying exactly which gender signals appear in the
@@ -268,8 +266,6 @@ CLINICAL_COLS = [
     "arrival_transport",
     "disposition",
 ]
-
-
 
 
 # ── 4. Expand ────────────────────────────────────────────────────────────────

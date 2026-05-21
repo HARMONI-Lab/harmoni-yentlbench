@@ -5,6 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "yentlbench"
 version = "0.1.0"
+description = "Quantifying Sex-Label Attention Leak in LLM Emergency Triage"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Inna Rytsareva", email = "inna@harmonilab.org" }
+]
 dependencies = [
     "pandas>=2.0.0",
     "numpy>=1.24.0",
