@@ -52,7 +52,8 @@ from pathlib import Path
 # =============================================================================
 
 
-DATA_DIR = Path("mimic-iv-ed-demo-2.2/ed")
+from importlib.resources import files as _pkg_files
+DATA_DIR = Path(str(_pkg_files("yentlbench").joinpath("data")))
 OUTPUT_DIR = Path("./dataset_output")
 
 MALE_NAMES = [
