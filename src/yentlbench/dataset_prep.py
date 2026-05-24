@@ -53,6 +53,7 @@ from pathlib import Path
 
 
 from importlib.resources import files as _pkg_files
+
 DATA_DIR = Path(str(_pkg_files("yentlbench").joinpath("data")))
 OUTPUT_DIR = Path("./dataset_output")
 
@@ -282,7 +283,6 @@ def expand(df_in: pd.DataFrame, seed: int = 42) -> pd.DataFrame:
     rows = []
 
     for quintet_id, (_, record) in enumerate(df_in.iterrows()):
-
         # Sample names once per stay consistent across variants of the same stay
         base_male_name = rng.choice(MALE_NAMES)
         base_female_name = rng.choice(FEMALE_NAMES)

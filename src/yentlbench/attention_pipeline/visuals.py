@@ -104,7 +104,7 @@ def generate_cross_model_visuals(
         ax.text(
             best_model["PSS"],
             0,
-            f'  Best: {best_model["PSS"]:.3f}',
+            f"  Best: {best_model['PSS']:.3f}",
             va="center",
             ha="left",
             fontsize=10,
@@ -116,7 +116,7 @@ def generate_cross_model_visuals(
         ax.text(
             worst_model["PSS"],
             len(df) - 1,
-            f'  Worst: {worst_model["PSS"]:.3f}',
+            f"  Worst: {worst_model['PSS']:.3f}",
             va="center",
             ha="left",
             fontsize=10,
@@ -224,7 +224,7 @@ def generate_cross_model_visuals(
             plt.text(
                 x_pos + 0.5,
                 idx,
-                f'{int(row["Critical 2→5"])}x 2→5',
+                f"{int(row['Critical 2→5'])}x 2→5",
                 va="center",
                 color="red",
                 fontweight="bold",
