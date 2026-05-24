@@ -26,16 +26,16 @@ def test_esi_parser():
         result = process_runner_output(case["text"])
 
         if case["valid"]:
-            assert result["parse_failed"] is False, (
-                f"Failed to parse valid case: {case['text']}"
-            )
-            assert result["predicted_score"] == float(case["expected"]), (
-                f"Parsed wrong score for: {case['text']}"
-            )
+            assert (
+                result["parse_failed"] is False
+            ), f"Failed to parse valid case: {case['text']}"
+            assert result["predicted_score"] == float(
+                case["expected"]
+            ), f"Parsed wrong score for: {case['text']}"
         else:
-            assert result["parse_failed"] is True, (
-                f"Incorrectly parsed invalid case: {case['text']}"
-            )
-            assert result["predicted_score"] == -1.0, (
-                f"Incorrect sentinel for invalid case: {case['text']}"
-            )
+            assert (
+                result["parse_failed"] is True
+            ), f"Incorrectly parsed invalid case: {case['text']}"
+            assert (
+                result["predicted_score"] == -1.0
+            ), f"Incorrect sentinel for invalid case: {case['text']}"

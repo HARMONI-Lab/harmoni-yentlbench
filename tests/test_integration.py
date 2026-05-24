@@ -146,10 +146,13 @@ def test_full_pipeline_integration(mock_ollama):
         ]
 
         with patch.object(sys, "argv", test_args_analyze):
-            with patch("seaborn.heatmap"), patch("seaborn.pointplot"), patch(
-                "seaborn.barplot"
-            ), patch("seaborn.violinplot"), patch("matplotlib.pyplot.savefig"), patch(
-                "matplotlib.pyplot.close"
+            with (
+                patch("seaborn.heatmap"),
+                patch("seaborn.pointplot"),
+                patch("seaborn.barplot"),
+                patch("seaborn.violinplot"),
+                patch("matplotlib.pyplot.savefig"),
+                patch("matplotlib.pyplot.close"),
             ):
                 main()
 
