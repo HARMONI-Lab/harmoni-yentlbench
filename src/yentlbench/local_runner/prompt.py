@@ -16,12 +16,11 @@ def build_prompt(vignette: Dict[str, Any], variant: str) -> str:
     ]
 
     # Gender signals
-    if vignette.get("patient_name"):
-        lines.append(f"Name: {vignette['patient_name']}")
-    if vignette.get("sex_label"):
+    def _present(val) -> bool:
+        return bool(val) and str(val).strip().lower() != "nan"
+
+    if _present(vignette.get("sex_label")):
         lines.append(f"Sex: {vignette['sex_label']}")
-    if vignette.get("pronoun"):
-        lines.append(f"Pronouns: {vignette['pronoun']}")
 
     # Clinical variables
     cc = vignette.get("chiefcomplaint", "Unknown")
