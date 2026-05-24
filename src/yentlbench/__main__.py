@@ -98,17 +98,18 @@ def run_results(args):
     import shutil
     import glob
     import yentlbench.results
-    
+
     src = os.path.dirname(yentlbench.results.__file__)
     os.makedirs(args.results_dir, exist_ok=True)
-    
-    files = glob.glob(os.path.join(src, '*.run.json'))
+
+    files = glob.glob(os.path.join(src, "*.run.json"))
     count = 0
     for f in files:
         shutil.copy(f, args.results_dir)
         count += 1
-        
+
     print(f"Copied {count} pre-run result files to '{args.results_dir}'.")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -201,6 +202,7 @@ def main():
         run_analyze(args)
     elif args.command == "results":
         run_results(args)
+
 
 if __name__ == "__main__":
     main()
