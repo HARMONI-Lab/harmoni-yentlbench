@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: yentlbench
-Version: 0.2.2
+Version: 0.2.3
 Summary: Quantifying Sex-Label Attention Leak in LLM Emergency Triage
 Author-email: Inna Rytsareva <inna@harmonilab.org>
 Requires-Python: >=3.8
