@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yentlbench"
-version = "0.2.0"
+version = "0.2.1"
 description = "Quantifying Sex-Label Attention Leak in LLM Emergency Triage"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -30,7 +30,7 @@ yentlbench = "yentlbench.__main__:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-yentlbench = ["data/*.csv"]
+yentlbench = ["data/*.csv", "results/*.run.json"]
 
 [tool.black]
 target-version = ["py312"]

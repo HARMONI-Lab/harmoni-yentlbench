@@ -15,6 +15,9 @@ prepare:
 run:
 	yentlbench run
 
+results:
+	yentlbench results --copy-to $(RESULTS_DIR)
+
 merge:
 	yentlbench merge --results-dir $(RESULTS_DIR) --output $(MERGED_CSV)
 

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: yentlbench
-Version: 0.2.0
+Version: 0.2.1
 Summary: Quantifying Sex-Label Attention Leak in LLM Emergency Triage
 Author-email: Inna Rytsareva <inna@harmonilab.org>
 Requires-Python: >=3.8
@@ -363,6 +363,8 @@ yentlbench prepare
 make prepare
 ```
 This generates `dataset_output/dataset_males.csv` and `dataset_output/dataset_quintets.csv`.
+
+### Step 1: Running the Benchmark on Kaggle
 
 ### Step 1a: Running the Benchmark on Kaggle (Frontier Models)
 
