@@ -31,3 +31,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 yentlbench = ["data/*.csv"]
+
+[tool.black]
+target-version = ["py312"]
+line-length = 88
