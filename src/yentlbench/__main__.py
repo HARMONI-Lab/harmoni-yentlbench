@@ -94,6 +94,22 @@ def run_analyze(args):
     attention_main(attention_argv)
 
 
+def run_results(args):
+    import shutil
+    import glob
+    import yentlbench.results
+    
+    src = os.path.dirname(yentlbench.results.__file__)
+    os.makedirs(args.results_dir, exist_ok=True)
+    
+    files = glob.glob(os.path.join(src, '*.run.json'))
+    count = 0
+    for f in files:
+        shutil.copy(f, args.results_dir)
+        count += 1
+        
+    print(f"Copied {count} pre-run result files to '{args.results_dir}'.")
+
 def main():
     parser = argparse.ArgumentParser(
         prog="yentlbench", description="YentlBench Workflow CLI"
@@ -165,6 +181,14 @@ def main():
     )
     analyze_p.add_argument("--verbose", action="store_true", help="Verbose logging")
 
+    # Results
+    results_p = subparsers.add_parser(
+        "results", help="Copy pre-run data into the local directory"
+    )
+    results_p.add_argument(
+        "--results-dir", default="results", help="Directory to save .run.json files"
+    )
+
     args = parser.parse_args()
 
     if args.command == "prepare":
@@ -175,7 +199,8 @@ def main():
         run_merge(args)
     elif args.command == "analyze":
         run_analyze(args)
-
+    elif args.command == "results":
+        run_results(args)
 
 if __name__ == "__main__":
     main()
