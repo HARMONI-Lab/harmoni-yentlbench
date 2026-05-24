@@ -345,6 +345,8 @@ make prepare
 ```
 This generates `dataset_output/dataset_males.csv` and `dataset_output/dataset_quintets.csv`.
 
+### Step 1: Running the Benchmark on Kaggle
+
 ### Step 1a: Running the Benchmark on Kaggle (Frontier Models)
 
 This benchmark is designed to be run on Kaggle for proprietary API-based frontier models. You can find more details and run the benchmark directly on Kaggle: [Yentlbench Kaggle Benchmark](https://www.kaggle.com/benchmarks/innacampo/yentlbench)

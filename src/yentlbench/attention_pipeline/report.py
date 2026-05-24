@@ -47,9 +47,9 @@ def print_model_report(result: Dict[str, Any], file: Optional[IO[str]] = None) -
     model = result.get("model", "unknown")
     n = result.get("n_cases", 0)
 
-    _emit(f"\n{'='*72}", file)
+    _emit(f"\n{'=' * 72}", file)
     _emit(f"  ATTENTION ANALYSIS: {model}", file)
-    _emit(f"{'='*72}", file)
+    _emit(f"{'=' * 72}", file)
     _emit(f"  Cases analyzed: {n}", file)
 
     # Sensitivity
@@ -183,8 +183,7 @@ def print_model_report(result: Dict[str, Any], file: Optional[IO[str]] = None) -
         dominant, dominant_mag = _get_dominant_effect(ed)
         if dominant:
             _emit(
-                f"\n     Dominant effect: {dominant} "
-                f"(magnitude: {dominant_mag:.4f})",
+                f"\n     Dominant effect: {dominant} (magnitude: {dominant_mag:.4f})",
                 file,
             )
 
@@ -357,9 +356,9 @@ def print_cross_model_summary(
     file: Optional[IO[str]] = None,
 ) -> None:
     summary_df = build_cross_model_summary(all_results)
-    _emit(f"\n{'='*72}", file)
+    _emit(f"\n{'=' * 72}", file)
     _emit("  CROSS-MODEL ATTENTION RANKING", file)
-    _emit(f"{'='*72}", file)
+    _emit(f"{'=' * 72}", file)
     _emit("  (Lower sensitivity score = more sex-invariant = better)\n", file)
 
     cols = [
